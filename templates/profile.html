@@ -1,0 +1,79 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>  
+    <meta charset="UTF-8">
+    <title>My Profile | PayNow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="bg-gradient-to-br from-purple-100 via-pink-100 to-yellow-100 min-h-screen py-10 font-sans">
+
+<!-- Back button on top left, outside the profile box -->
+<div class="absolute top-10 left-10">
+    <a href="javascript:history.back()" class="inline-flex items-center text-purple-600 hover:text-purple-800 font-semibold bg-white rounded-lg shadow px-4 py-2">
+        <i class="fas fa-arrow-left mr-2"></i> Back
+    </a>
+</div>
+
+<div class="max-w-3xl mx-auto bg-white shadow-2xl rounded-2xl overflow-hidden transform hover:scale-[1.01] transition-all duration-300 mt-10">
+    <div class="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 p-6 flex items-center gap-4">
+        <!-- Circle with first letter of the name -->
+        <div class="w-24 h-24 rounded-full bg-yellow-400 flex items-center justify-center text-4xl font-bold text-white shadow-lg">
+            {{ name|slice:":1"|upper }}
+        </div>
+        <div>
+            <h1 class="text-3xl font-bold text-white">{{ name }}</h1>
+            <p class="text-yellow-100 text-sm">{{ upi_id }}</p>
+        </div>
+    </div>
+
+    <!-- Personal Info -->
+    <div class="p-6 divide-y divide-gray-200">
+        <div class="flex justify-between py-4 items-center bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg px-4 mb-2">
+            <span class="text-gray-600 flex items-center gap-2">
+                <i class="fas fa-phone-alt"></i> Phone Number
+            </span>
+            <span class="font-medium">{{ phone }}</span>
+        </div>
+        <div class="flex justify-between py-4 items-center bg-gradient-to-r from-green-50 to-blue-50 rounded-lg px-4 mb-2">
+            <span class="text-gray-600 flex items-center gap-2">
+                <i class="fas fa-envelope"></i> Email
+            </span>
+            <span class="font-medium">{{ email }}</span>
+        </div>
+        <div class="flex justify-between py-4 items-center bg-gradient-to-r from-pink-50 to-purple-50 rounded-lg px-4 mb-2">
+            <span class="text-gray-600 flex items-center gap-2">
+                <i class="fas fa-university"></i> Bank Name
+            </span>
+            <span class="font-medium">{{ bank_name }}</span>
+        </div>
+        <div class="flex justify-between py-4 items-center bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg px-4 mb-2">
+            <span class="text-gray-600 flex items-center gap-2">
+                <i class="fas fa-credit-card"></i> Account Number
+            </span>
+            <span class="font-medium">XXXX-XXXX-{{ account_number|slice:"-4:" }}</span>
+        </div>
+        <div class="flex justify-between py-4 items-center bg-gradient-to-r from-blue-50 to-green-50 rounded-lg px-4 mb-2">
+            <span class="text-gray-600 flex items-center gap-2">
+                <i class="fas fa-id-badge"></i> UPI ID
+            </span>
+            <span class="font-medium">{{ upi_id }}</span>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="bg-gray-50 p-6 flex gap-3">
+        <a href="{% url 'change_upi' %}" 
+           class="flex-1 bg-purple-600 text-white text-center py-3 rounded-lg hover:bg-purple-700 shadow-md transition">
+            <i class="fas fa-key mr-2"></i> Change UPI PIN
+        </a>
+        <a href="{% url 'logout' %}" 
+           class="flex-1 bg-red-500 text-white text-center py-3 rounded-lg hover:bg-red-600 shadow-md transition">
+            <i class="fas fa-sign-out-alt mr-2"></i> Logout
+        </a>
+    </div>
+</div>
+
+</body>
+</html>

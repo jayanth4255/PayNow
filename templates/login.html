@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login - PaySmart</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: linear-gradient(-45deg, #1e3a8a, #3b82f6, #6366f1, #0ea5e9);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+    }
+    @keyframes gradientBG {
+      0%, 100% {background-position: 0% 50%;}
+      50% {background-position: 100% 50%;}
+    }
+    .circle {
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0.3;
+      animation: float 12s infinite ease-in-out;
+    }
+    .circle1 { width: 200px; height: 200px; background:#60a5fa; top:10%; left:5%; animation-delay: 0s; }
+    .circle2 { width: 300px; height: 300px; background:#818cf8; bottom:15%; right:8%; animation-delay: 4s; }
+    .circle3 { width: 150px; height: 150px; background:#38bdf8; top:60%; left:20%; animation-delay: 8s; }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-20px); }
+    }
+  </style>
+</head>
+<body class="h-full flex items-center justify-center relative overflow-hidden">
+
+  <div class="circle circle1"></div>
+  <div class="circle circle2"></div>
+  <div class="circle circle3"></div>
+
+  <div class="relative w-full max-w-md p-8 bg-white/90 rounded-2xl shadow-2xl backdrop-blur-sm">
+    <h2 class="text-3xl font-extrabold text-center text-blue-700 mb-2">PayNow</h2>
+    <p class="text-gray-600 text-center mb-6 text-sm">Securely login to your account</p>
+
+    <form id="loginForm" action="/login/" method="POST" onsubmit="return delaySubmit(event)" class="space-y-5">
+      {% csrf_token %}
+      <div>
+        <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+        <div class="flex items-center">
+          <span class="inline-flex items-center px-3 border border-r-0 border-gray-300 bg-gray-50 text-gray-600 text-sm rounded-l-lg">+91</span>
+          <input
+            id="phone"
+            name="phone"
+            type="tel"
+            required
+            class="block w-full px-4 py-2 border border-gray-300 rounded-r-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+            placeholder="9876543210"
+          />
+        </div>
+      </div>
+      <div>
+        <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          required
+          class="block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+          placeholder="Enter your password"
+        />
+      </div>
+      {% if error %}
+        <p class="text-red-500 text-sm text-center font-medium">{{ error }}</p>
+      {% endif %}
+      <div class="flex justify-center">
+        <button type="submit" class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-2 rounded-full shadow-md hover:shadow-lg hover:scale-105 transform transition text-sm font-semibold">
+          Login
+        </button>
+      </div>
+      <div class="flex justify-between items-center mt-3 text-sm">
+        <div class="flex-1 flex justify-center">
+          <a href="{% url 'signin' %}" class="inline-block px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-full shadow hover:scale-105 hover:shadow-lg transition font-semibold text-center">
+            Create Account
+          </a>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div id="loader" class="fixed inset-0 bg-white bg-opacity-80 flex items-center justify-center z-50 hidden">
+    <svg class="animate-spin h-16 w-16 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+    </svg>
+  </div>
+
+  <script>
+    function delaySubmit(event) {
+      event.preventDefault();
+      document.getElementById("loader").classList.remove("hidden");
+      setTimeout(() => {
+        document.getElementById("loginForm").submit();
+      }, 700);
+      return false;
+    }
+  </script>
+
+</body>
+</html>

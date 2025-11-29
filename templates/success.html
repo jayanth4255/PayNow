@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Transaction Success | Snapay</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .checkmark-circle {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      display: block;
+      stroke-width: 2;
+      stroke: #4CAF50;
+      stroke-miterlimit: 10;
+      box-shadow: inset 0px 0px 0px #4CAF50;
+      animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
+      position: relative;
+      margin: 0 auto;
+      background: #fff;
+    }
+
+    .checkmark-circle__check {
+      transform-origin: 50% 50%;
+      stroke-dasharray: 100;
+      stroke-dashoffset: 100;
+      animation: stroke 0.6s ease-in-out 0.6s forwards;
+    }
+
+    @keyframes stroke {
+      100% {
+        stroke-dashoffset: 0;
+      }
+    }
+
+    @keyframes scale {
+      0%, 100% {
+        transform: none;
+      }
+      50% {
+        transform: scale(1.1);
+      }
+    }
+
+    @keyframes fill {
+      100% {
+        box-shadow: inset 0px 0px 0px 60px #4CAF50;
+      }
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-green-50 to-white min-h-screen flex items-center justify-center px-4">
+
+  <div class="bg-white p-8 shadow-2xl rounded-2xl text-center space-y-6 w-full max-w-sm">
+    
+    <div class="checkmark-circle">
+      <svg viewBox="0 0 52 52">
+        <circle cx="26" cy="26" r="25" fill="none" stroke="#4CAF50" stroke-width="2"/>
+        <path class="checkmark-circle__check" fill="none" stroke="#ffffff" stroke-width="5" d="M14 27l8 8 16-16"/>
+      </svg>
+    </div>
+
+    <h2 class="text-3xl font-bold text-green-700">₹{{ amount }} Sent Successfully</h2>
+
+    <p class="text-gray-600 text-sm">Your payment was successful using Snapay UPI.</p>
+
+    <div class="text-sm text-gray-700 space-y-1">
+      <p><strong>Receiver:</strong> {{ receiver_phone_number }}</p>
+      <p><strong>Transaction ID:</strong> <span class="font-mono bg-gray-100 px-2 py-1 rounded">{{ reference_id }}</span></p>
+      <p><strong>Time & Date:</strong> {{ timestamp }}</p>
+    </div>
+
+    <a href="{% url 'index' %}" class="inline-block mt-6 px-5 py-2 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition">
+      Go to Home
+    </a>
+
+  </div>
+
+</body>
+</html>

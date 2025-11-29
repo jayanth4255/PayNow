@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Transfer Money</title>
+  <style>
+    body {
+      background: #f0f4f8;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      color: #333;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 500px;
+      padding: 30px;
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+      animation: fadeIn 0.8s ease-in-out;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 24px;
+      font-size: 28px;
+      font-weight: 700;
+      color: #0072ff;
+      position: relative;
+    }
+
+    h2::after {
+      content: "";
+      display: block;
+      width: 60px;
+      height: 3px;
+      background: #00c6ff;
+      margin: 8px auto 0;
+      border-radius: 2px;
+    }
+
+    input[type="text"], input[type="number"] {
+      width: 100%;
+      padding: 14px;
+      margin: 12px 0;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      background: #f9f9f9;
+      color: #333;
+      font-size: 16px;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    input[type="text"]:focus, input[type="number"]:focus {
+      border-color: #0072ff;
+      box-shadow: 0 0 10px rgba(0, 114, 255, 0.2);
+      background: #fff;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 16px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      background: linear-gradient(90deg, #00c6ff, #0072ff);
+      color: #fff;
+      transition: all 0.3s ease;
+      box-shadow: 0 5px 15px rgba(0,114,255,0.2);
+    }
+
+    button:hover {
+      transform: scale(1.03);
+      box-shadow: 0 8px 25px rgba(0,114,255,0.3);
+    }
+
+    /* ✅ Professional Error Box */
+    .error-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #ffe5e5;
+      border: 1px solid #ff4d4d;
+      color: #ff1a1a;
+      padding: 14px 16px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 500;
+      margin-bottom: 18px;
+      animation: shake 0.3s ease;
+      justify-content: center;
+    }
+
+    .error-icon {
+      font-size: 18px;
+    }
+
+    /* ✅ Receiver Card */
+    .receiver-card {
+      background: #f9f9f9;
+      border-radius: 16px;
+      padding: 18px;
+      margin-top: 18px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      animation: slideUp 0.8s ease;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    }
+
+    .avatar {
+      width: 55px;
+      height: 55px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #00c6ff, #0072ff);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 20px;
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(0,114,255,0.2);
+    }
+
+    .receiver-card strong {
+      font-size: 18px;
+    }
+
+    .receiver-card small {
+      opacity: 0.8;
+      font-size: 14px;
+    }
+
+    /* ✅ Amount Form */
+    .amount-form {
+      margin-top: 20px;
+      padding: 18px;
+      border-radius: 16px;
+      background: #f9f9f9;
+      animation: fadeIn 1s ease-in-out;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    }
+
+    .amount-form input {
+      margin-top: 10px;
+    }
+
+    .amount-form button {
+      margin-top: 14px;
+    }
+
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(20px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+
+    @keyframes slideUp {
+      from {opacity: 0; transform: translateY(30px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(-4px); }
+      50% { transform: translateX(4px); }
+      75% { transform: translateX(-4px); }
+      100% { transform: translateX(0); }
+    }
+
+  </style>
+</head>
+<body>
+<a href="{% url 'index' %}" style="position: absolute; left: 30px; top: 30px; text-decoration: none;">
+    <button type="button" style="background: #eee; color: #0072ff; border: none; border-radius: 8px; padding: 8px 16px; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(0,114,255,0.08);">
+        ← Back
+    </button>
+</a>
+  <div class="container">
+    <h2>💸 Transfer Money</h2>
+
+    <form method="post" action="{% url 'transfer_money' %}">
+      {% csrf_token %}
+      {% if error %}
+        <div class="error-box">
+          <span class="error-icon">⚠️</span>
+          <span class="error-text">{{ error }}</span>
+        </div>
+      {% endif %}
+      <input type="text" name="receiver_phone_number" placeholder="📱 Enter Receiver Phone Number" required>
+      <button type="submit">🔍 Validate Receiver</button>
+    </form>
+
+    {% if receiver %}
+    <!-- ✅ Receiver details -->
+    <div class="receiver-card">
+      <div class="avatar">{{ receiver.name|first|upper }}</div>
+      <div>
+        <strong>{{ receiver.name }}</strong><br>
+        <small>📞 {{ receiver.phone }}</small>
+      </div>
+    </div>
+
+    <!-- ✅ Amount form -->
+    <form method="post" action="{% url 'enter_amount' receiver.id %}" class="amount-form">
+      {% csrf_token %}
+      <input type="number" name="amount" placeholder="💰 Enter Amount (₹)" required min="1">
+      <button type="submit">⚡ Proceed to Pay</button>
+    </form>
+    {% endif %}
+  </div>
+
+</body>
+</html>

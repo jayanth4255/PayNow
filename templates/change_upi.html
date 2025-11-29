@@ -1,0 +1,32 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Change UPI PIN</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+  <div class="bg-white p-6 rounded-xl shadow-md w-96">
+    <h2 class="text-xl font-semibold mb-4">Change UPI PIN</h2>
+
+    {% if messages %}
+      {% for msg in messages %}
+        <p class="text-red-600">{{ msg }}</p>
+      {% endfor %}
+    {% endif %}
+
+    <form method="post">
+      {% csrf_token %}
+      <label class="block mb-2">Aadhaar Number</label>
+      <input type="text" name="aadhar" class="w-full border rounded p-2 mb-4">
+
+      <label class="block mb-2">Old PIN</label>
+      <input type="password" name="old_pin" class="w-full border rounded p-2 mb-4">
+
+      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg w-full">
+        Validate & Continue
+      </button>
+    </form>
+  </div>
+</body>
+</html>

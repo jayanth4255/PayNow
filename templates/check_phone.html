@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Check Phone Number</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+  <div class="max-w-md mx-auto mt-16 p-6 bg-white rounded-xl shadow-md">
+    <h2 class="text-xl font-semibold text-center mb-4">Check Phone Number</h2>
+
+    <form id="phoneForm" method="post">
+      {% csrf_token %}
+      <!-- Hidden input to detect form submission -->
+      <input type="hidden" name="submitted" value="true">
+
+      <label class="block text-gray-700 font-medium mb-2">Phone Number</label>
+      <input type="text" name="phone" id="phone" value="{{ phone|default:'' }}"
+             class="w-full p-2 border border-gray-300 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400"
+             placeholder="Enter your phone number">
+      <label class="block text-gray-700 font-medium mb-2">Aadhar Number</label>
+      <input type="text" name="aadhar" id="aadhar" value="{{ aadhar|default:'' }}"
+             class="w-full p-2 border border-gray-300 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400"
+             placeholder="Enter your Aadhar Number">
+
+      <button type="submit"
+              class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">Check</button>
+    </form>
+
+    <!-- Show errors only after submit -->
+    {% if submitted %}
+      {% if error %}
+        <div class="bg-red-100 text-red-700 p-3 mt-4 rounded border-l-4 border-red-500">
+          {{ error }}
+        </div>
+      {% endif %}
+
+      {% if existing_error %}
+        <div class="bg-yellow-100 text-yellow-800 p-3 mt-4 rounded border-l-4 border-yellow-500">
+          {{ existing_error }}
+        </div>
+      {% endif %}
+    {% endif %}
+
+    {% if user_created %}
+      <form action="{% url 'set_upi' %}" method="get" class="mt-6 space-y-3">
+        <div>
+          <label class="block text-sm font-medium">Registered UserName</label>
+          <input type="text" readonly value="{{ Registerd_name }}"
+                 class="w-full p-2 border border-gray-300 rounded">
+        </div>
+        <div>
+          <label class="block text-sm font-medium">Bank Name</label>
+          <input type="text" readonly value="{{ bank }}"
+                 class="w-full p-2 border border-gray-300 rounded">
+        </div>     
+        
+        <div>
+          <label class="block text-sm font-medium">Bank Account Number</label>
+          <input type="text" readonly value="{{ account_last }}"
+                 class="w-full p-2 border border-gray-300 rounded">
+        </div>
+        <div>
+          <label class="block text-sm font-medium">Email</label>
+          <input type="email" name="email" , id="email"
+                 class="w-full p-2 border border-gray-300 rounded" required>
+        </div>
+
+        <button type="submit"
+                class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition">Proceed to Set UPI</button>
+      </form>
+    {% endif %}
+  </div>
+</body>
+</html>
