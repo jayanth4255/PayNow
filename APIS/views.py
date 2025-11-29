@@ -40,7 +40,6 @@ class Scan_Pay(APIView):
         tn = data.get("tn")
         
         # TODO: Validate or simulate payment
-        print("Scanned UPI:", pa, pn, am, tn)
         
         return JsonResponse({"status": "success", "message": "UPI QR processed"})
 
@@ -332,9 +331,7 @@ class VerifyPin(APIView):
         if start_time_str:
             start_time = timezone.datetime.fromisoformat(start_time_str)
             now = timezone.now()
-            print(start_time , now)
             if (now - start_time).total_seconds() > SESSION_TIMEOUT_MINUTES * 60:
-                print("/session timedout")
                 return render(request, 'index.html', {'error': 'Session expired. Please try again.'})
 
         # ✅ Pass datetime object (not string) into serializer

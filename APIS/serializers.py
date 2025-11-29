@@ -60,21 +60,15 @@ class SetPinSerializer(serializers.Serializer):
 
 
 
-
 class LoginSerializer(serializers.Serializer):
     phone = serializers.CharField()
     password = serializers.CharField(write_only=True, style={'input_type': 'password'})
 
     def validate(self, data):
-        print('Done')
         phone = data.get('phone')
         password = data.get('password')
-        print(phone)
-        print(password)
         try:
-            print('working')
             profile = userprofile.objects.get(phone=phone)
-            print(profile.pin)
             if profile.pin != password:
                 raise serializers.ValidationError("Password does Not Match")
         except userprofile.DoesNotExist:
@@ -85,7 +79,7 @@ class LoginSerializer(serializers.Serializer):
 
 class TransferMoneySerializer(serializers.Serializer):
     receiver_phone_number = serializers.CharField()
-    print("Coming here")
+    
     def validate(self, data):
         receiver_phone_number = data.get('receiver_phone_number')
         try:
@@ -128,7 +122,6 @@ class ReceiverMoneySerializer(serializers.Serializer):
 
 
 class VarifyPinSerializer(serializers.Serializer):
-    print("(++++++++++++++++++++++++++++>>>>>>>>>>00)coming to the serializer")
     transaction_id = serializers.CharField()
     sender_name = serializers.CharField()
     sender_phone_number = serializers.CharField()
@@ -147,7 +140,6 @@ class VarifyPinSerializer(serializers.Serializer):
     def validate(self, data):
         pin = data.get('pin')
         entered_pin = data.get('entered_pin')
-        print("))))((()()()()()))",entered_pin,pin)
         amount = data.get('transaction_amount')
         sender_phone_number = data.get('sender_phone_number')
         receiver_phone_number = data.get('receiver_phone_number')
