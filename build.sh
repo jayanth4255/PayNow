@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 # exit on error
-# Render Deployment Script
 set -o errexit
 
 pip install -r requirements.txt

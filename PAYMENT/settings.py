@@ -19,13 +19,27 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
+# SECURITY WARNING: keep the secret key used in production secret!
 import os
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-$8*okxixg0f52vjb#d*n4p#dl$s%6t=dtaoy+t8*kd$fxc65c9')
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
 
-ALLOWED_HOSTS = ['*']
+# SECURITY WARNING: don't run with debug turned on in production!
+# Render sets the 'RENDER' environment variable to 'true'
+RENDER = os.environ.get('RENDER')
+DEBUG = not RENDER
+
+ALLOWED_HOSTS = []
+if RENDER:
+    ALLOWED_HOSTS = [os.environ.get('RENDER_EXTERNAL_HOSTNAME')]
+else:
+    ALLOWED_HOSTS = ['*']
+
+# Add CSRF trusted origins for Render
+if RENDER:
+    CSRF_TRUSTED_ORIGINS = [
+        f"https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME')}",
+    ]
 
 
 # Application definition
