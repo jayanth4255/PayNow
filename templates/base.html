@@ -1,39 +1,125 @@
-<!-- templates/base.html -->
- {% load static %}
+{% load static %}
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{% block title %}PayNow - Your Trusted Payment App{% endblock %}</title>
+<html lang="en">
 
-    <!-- Tailwind CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-  </head>
-  <body class="bg-gray-50 text-gray-800 font-sans">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{% block title %}PayNow{% endblock %}</title>
 
-    <!-- Navbar -->
-    <header class="bg-white shadow-sm sticky top-0 z-50">
-      <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-        <div class="flex items-center space-x-2">
-          <img src="{% static 'images/logo.jpg' %}" alt="logo" class="h-7 w-7">
-          <span class="text-xl font-semibold text-blue-700">PayNow</span>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+
+<body>
+
+    <!-- Desktop Navbar -->
+    <nav class="navbar">
+        <div class="container flex justify-between items-center">
+            <a href="{% url 'index' %}" class="nav-brand">
+                <div
+                    style="width: 32px; height: 32px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white;">
+                    <i class="ri-flashlight-fill"></i>
+                </div>
+                PayNow
+            </a>
+
+            <div class="nav-links">
+                <a href="{% url 'index' %}" class="nav-link {% if request.path == '/' %}active{% endif %}">Home</a>
+                {% if request.session.login_phone %}
+                <a href="{% url 'profile' %}"
+                    class="nav-link {% if 'profile' in request.path %}active{% endif %}">Dashboard</a>
+                <a href="{% url 'transaction_history' %}"
+                    class="nav-link {% if 'history' in request.path %}active{% endif %}">History</a>
+                <div style="width: 1px; height: 24px; background: var(--border); margin: 0 0.5rem;"></div>
+                <a href="{% url 'logout' %}" class="btn btn-outline btn-sm" style="border-radius: 20px;">Logout</a>
+                {% else %}
+                <a href="{% url 'login' %}" class="nav-link">Login</a>
+                <a href="{% url 'signin' %}" class="btn btn-primary btn-sm">Sign Up</a>
+                {% endif %}
+            </div>
         </div>
-        
-      </div>
-    </header>
+    </nav>
 
-    <!-- Page Content -->
-    <main>
-      {% block content %}
-      <!-- Default content -->
-      {% endblock %}
+    <!-- Messages -->
+    {% if messages %}
+    <div class="container mt-4 animate-slide-up">
+        {% for message in messages %}
+        <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+            <i class="ri-{% if message.tags == 'error' %}error-warning{% else %}checkbox-circle{% endif %}-fill"></i>
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main style="flex: 1;">
+        {% block content %}
+        {% endblock %}
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-white py-6 mt-12 text-center text-sm text-gray-500">
-      &copy; 2025 PayNow. Built with love. Not affiliated with Google.
+    <!-- Mobile Bottom Navigation -->
+    {% if request.session.login_phone %}
+    <div class="bottom-nav">
+        <a href="{% url 'index' %}" class="bottom-nav-item {% if request.path == '/' %}active{% endif %}">
+            <i class="ri-home-5-{% if request.path == '/' %}fill{% else %}line{% endif %}"></i>
+            <span>Home</span>
+        </a>
+        <a href="{% url 'upi-scan' %}" class="bottom-nav-item">
+            <div
+                style="background: var(--primary); width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; margin-top: -24px; box-shadow: 0 4px 10px rgba(0, 102, 255, 0.4);">
+                <i class="ri-qr-scan-2-line" style="font-size: 1.5rem; margin: 0;"></i>
+            </div>
+            <span style="margin-top: 4px;">Scan</span>
+        </a>
+        <a href="{% url 'profile' %}" class="bottom-nav-item {% if 'profile' in request.path %}active{% endif %}">
+            <i class="ri-user-3-{% if 'profile' in request.path %}fill{% else %}line{% endif %}"></i>
+            <span>Profile</span>
+        </a>
+        <a href="{% url 'transaction_history' %}"
+            class="bottom-nav-item {% if 'history' in request.path %}active{% endif %}">
+            <i class="ri-history-line"></i>
+            <span>History</span>
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Footer (Desktop Only) -->
+    <footer style="background: white; padding: 3rem 0; margin-top: auto; border-top: 1px solid var(--border);"
+        class="hidden-mobile">
+        <div class="container">
+            <div class="flex justify-between items-center">
+                <div>
+                    <div class="nav-brand mb-4">PayNow</div>
+                    <p class="text-muted" style="max-width: 300px;">Secure, fast, and simple payments for everyone.</p>
+                </div>
+                <div class="flex gap-4">
+                    <a href="#" class="text-muted hover:text-primary"><i class="ri-twitter-fill"
+                            style="font-size: 1.5rem;"></i></a>
+                    <a href="#" class="text-muted hover:text-primary"><i class="ri-instagram-fill"
+                            style="font-size: 1.5rem;"></i></a>
+                    <a href="#" class="text-muted hover:text-primary"><i class="ri-linkedin-fill"
+                            style="font-size: 1.5rem;"></i></a>
+                </div>
+            </div>
+            <div class="text-center text-muted text-sm mt-8 pt-8" style="border-top: 1px solid var(--border);">
+                &copy; 2024 PayNow Technologies. All rights reserved.
+            </div>
+        </div>
     </footer>
 
-  </body>
+    <style>
+        @media (max-width: 768px) {
+            .hidden-mobile {
+                display: none;
+            }
+        }
+    </style>
+</body>
+
 </html>

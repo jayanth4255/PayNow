@@ -28,9 +28,9 @@ DEBUG = not RENDER  # Default: False on Render
 # ------------------------------
 # DEBUG OVERRIDE (for troubleshooting 500 on Render)
 # ------------------------------
-DEBUG = False
-ALLOWED_HOSTS = ["paynow-qqdh.onrender.com"]  # Replace with your Render service hostname
-CSRF_TRUSTED_ORIGINS = ["https://paynow-qqdh.onrender.com"]
+DEBUG = True
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "[::1]","paynow-qqdh.onrender.com"]  # Replace with your Render service hostname
+CSRF_TRUSTED_ORIGINS = ["https://paynow-qqdh.onrender.com","http://localhost:8000", "http://127.0.0.1:8000"]
 
 # ------------------------------
 # INSTALLED APPS

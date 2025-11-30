@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Pay {{ type }} Bill - PayNow{% endblock %}
+
+{% block content %}
+<div class="container py-12">
+    <div class="flex justify-center">
+        <div class="card animate-slide-up" style="width: 100%; max-width: 500px; padding: 2rem;">
+            <a href="{% url 'profile' %}" class="text-muted mb-4 inline-block hover:text-primary transition-colors">
+                <i class="ri-arrow-left-line"></i> Back to Dashboard
+            </a>
+            <div class="text-center mb-8">
+                <div
+                    style="width: 64px; height: 64px; background: var(--primary-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: var(--primary); font-size: 1.75rem;">
+                    {% if type == 'Water' %}<i class="ri-drop-fill"></i>
+                    {% elif type == 'Gas' %}<i class="ri-fire-fill"></i>
+                    {% else %}<i class="ri-bill-fill"></i>{% endif %}
+                </div>
+                <h2>Pay {{ type }} Bill</h2>
+                <p class="text-muted">Fetch and pay your bill instantly</p>
+            </div>
+
+            {% if fetched %}
+            <!-- Bill Details -->
+            <div class="alert alert-success mb-6">
+                <div class="flex justify-between w-full">
+                    <span>Bill Amount</span>
+                    <strong style="font-size: 1.2rem;">₹{{ bill_amount }}</strong>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <p class="text-muted text-sm mb-1">Consumer Number</p>
+                <p class="font-bold">{{ consumer_number }}</p>
+            </div>
+
+            <form method="POST" action="{% url 'transfer_money' %}"> <!-- Redirect to generic payment flow for now -->
+                {% csrf_token %}
+                <input type="hidden" name="amount" value="{{ bill_amount }}">
+                <input type="hidden" name="receiver_phone_number" value="BILLPAY">
+                <button type="button" class="btn btn-primary btn-block btn-lg"
+                    onclick="alert('Payment Gateway Integration Pending')">
+                    Pay ₹{{ bill_amount }}
+                </button>
+            </form>
+
+            {% else %}
+            <!-- Fetch Form -->
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="type" value="{{ type }}">
+
+                <div class="form-group">
+                    <label class="form-label">Select Board/Provider</label>
+                    <select class="form-control">
+                        <option>Select Provider</option>
+                        <option>Provider A</option>
+                        <option>Provider B</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Consumer Number / ID</label>
+                    <input type="text" name="consumer_number" class="form-control" placeholder="Enter Consumer Number"
+                        required>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block btn-lg mt-6">
+                    Fetch Bill
+                </button>
+            </form>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+{% endblock %}

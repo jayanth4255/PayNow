@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Bus Booking - PayNow{% endblock %}
+
+{% block content %}
+<div class="container py-12">
+    <div class="flex justify-center">
+        <div class="card animate-slide-up" style="width: 100%; max-width: 500px; padding: 2rem;">
+            <a href="{% url 'profile' %}" class="text-muted mb-4 inline-block hover:text-primary transition-colors">
+                <i class="ri-arrow-left-line"></i> Back to Dashboard
+            </a>
+            <div class="text-center mb-8">
+                <div
+                    style="width: 64px; height: 64px; background: #F3E8FF; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: #9333EA; font-size: 1.75rem;">
+                    <i class="ri-bus-fill"></i>
+                </div>
+                <h2>Bus Booking</h2>
+                <p class="text-muted">Search and book bus tickets instantly</p>
+            </div>
+
+            <form id="busForm" onsubmit="handleBusSearch(event)">
+
+                <div class="form-group">
+                    <label class="form-label">From</label>
+                    <div style="position: relative;">
+                        <i class="ri-map-pin-line"
+                            style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                        <input type="text" id="source" class="form-control" placeholder="Enter Source City"
+                            style="padding-left: 2.75rem;" required>
+                    </div>
+                </div>
+
+                <div class="flex justify-center -my-4 relative z-10">
+                    <button type="button" class="btn btn-secondary btn-sm"
+                        style="border-radius: 50%; width: 32px; height: 32px; padding: 0;" onclick="swapCities()">
+                        <i class="ri-arrow-up-down-line"></i>
+                    </button>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">To</label>
+                    <div style="position: relative;">
+                        <i class="ri-map-pin-line"
+                            style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                        <input type="text" id="destination" class="form-control" placeholder="Enter Destination City"
+                            style="padding-left: 2.75rem;" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Date of Journey</label>
+                    <input type="date" class="form-control" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block btn-lg mt-6">
+                    Search Buses
+                </button>
+            </form>
+
+            <div class="mt-8 pt-6 border-t border-gray-100">
+                <p class="text-center text-muted text-sm mb-4">Or book directly on</p>
+                <div class="flex justify-center gap-4">
+                    <a href="https://www.redbus.in/" target="_blank" class="btn btn-outline btn-sm">RedBus</a>
+                    <a href="https://www.apsrtconline.in/" target="_blank" class="btn btn-outline btn-sm">APSRTC</a>
+                    <a href="https://www.tsrtconline.in/" target="_blank" class="btn btn-outline btn-sm">TSRTC</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    function swapCities() {
+        const src = document.getElementById('source');
+        const dest = document.getElementById('destination');
+        const temp = src.value;
+        src.value = dest.value;
+        dest.value = temp;
+    }
+
+    function handleBusSearch(e) {
+        e.preventDefault();
+        // For now, redirect to RedBus as a default action
+        window.open('https://www.redbus.in/', '_blank');
+    }
+</script>
+{% endblock %}

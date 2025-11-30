@@ -1,152 +1,31 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Balance Enquiry | Snapay</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(to bottom right, #f0fdf4, #fff);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-    .back-btn {
-      position: absolute;
-      top: 30px;
-      left: 30px;
-      background: #22c55e;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      padding: 8px 16px;
-      font-size: 1rem;
-      font-weight: 600;
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: background .2s;
-      cursor: pointer;
-    }
-    .back-btn:hover {
-      background: #15803d;
-    }
-    .card {
-      background: #fff;
-      padding: 2rem;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-      border-radius: 15px;
-      text-align: center;
-      max-width: 400px;
-      width: 100%;
-      position: relative;
-    }
-    .checkmark-circle {
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      display: block;
-      stroke-width: 2;
-      stroke: #4CAF50;
-      box-shadow: inset 0 0 0 #4CAF50;
-      animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
-      margin: 0 auto 20px;
-      background: #fff;
-      position: relative;
-    }
-    .checkmark-circle__check {
-      transform-origin: 50% 50%;
-      stroke-dasharray: 100;
-      stroke-dashoffset: 100;
-      animation: stroke .6s ease-in-out .6s forwards;
-    }
-    h2 {
-      font-size: 1.5rem;
-      font-weight: bold;
-      color: #166534;
-      margin-bottom: 10px;
-    }
-    .details {
-      color: #374151;
-      font-size: .9rem;
-      margin-bottom: 20px;
-    }
-    .balance-label {
-      color: #4b5563;
-      font-size: .9rem;
-      margin-bottom: 5px;
-    }
-    #balanceAmount {
-      font-size: 2rem;
-      font-weight: bold;
-      color: #16a34a;
-      letter-spacing: 1px;
-    }
-    .btn {
-      display: inline-block;
-      margin-top: 20px;
-      padding: 10px 20px;
-      background: #22c55e;
-      color: #fff;
-      font-weight: 600;
-      border-radius: 8px;
-      text-decoration: none;
-      transition: background .2s;
-    }
-    .btn:hover {
-      background: #15803d;
-    }
-    @keyframes stroke {
-      to { stroke-dashoffset: 0; }
-    }
-    @keyframes scale {
-      50% { transform: scale(1.1); }
-    }
-    @keyframes fill {
-      to { box-shadow: inset 0 0 0 60px #4CAF50; }
-    }
-  </style>
-</head>
-<body>
-  <a href="{% url 'index' %}" class="back-btn">
-    &#8592; Back
-  </a>
-  <div class="card">
-    <div class="checkmark-circle">
-      <svg viewBox="0 0 52 52">
-        <circle cx="26" cy="26" r="25" fill="none" stroke="#4CAF50" stroke-width="2"/>
-        <path class="checkmark-circle__check" fill="none" stroke="#fff" stroke-width="5" d="M14 27l8 8 16-16"/>
-      </svg>
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Balance - PayNow{% endblock %}
+
+{% block content %}
+<div class="container flex items-center justify-center" style="min-height: 80vh;">
+    <div class="card text-center animate-fade-in" style="width: 100%; max-width: 400px;">
+
+        <div style="font-size: 3rem; color: var(--primary); margin-bottom: 1rem;">
+            <i class="ri-wallet-3-fill"></i>
+        </div>
+
+        <h2>Available Balance</h2>
+
+        <div class="mt-6 p-6"
+            style="background: var(--bg-body); border-radius: var(--radius-md); border: 1px solid var(--border);">
+            <h1 style="font-size: 3rem; color: var(--text-main);">₹ {{ balance }}</h1>
+            <div class="mt-2 text-muted">
+                {{ bank_name }} - {{ account_number|slice:"-4:" }}
+            </div>
+        </div>
+
+        <div class="mt-8">
+            <a href="{% url 'profile' %}" class="btn btn-primary btn-block">
+                Back to Dashboard
+            </a>
+        </div>
     </div>
-    <h2>Balance Enquiry</h2>
-    <div class="details">
-      <p><strong>Bank:</strong> {{ bank_name }}</p>
-      <p><strong>Account No:</strong> {{ account_number }}</p>
-    </div>
-    <div>
-      <p class="balance-label">Current Balance</p>
-      <div id="balanceAmount">₹0.00</div>
-    </div>
-    <a href="{% url 'index' %}" class="btn">Go to Home</a>
-  </div>
-  <script>
-    const balance = parseFloat("{{ balance }}") || 0;
-    const el = document.getElementById("balanceAmount");
-    let current = 0, increment = balance / 60;
-    function updateBalance() {
-      current += increment;
-      if (current >= balance) {
-        el.textContent = "₹" + balance.toLocaleString(undefined, {minimumFractionDigits: 2});
-      } else {
-        el.textContent = "₹" + current.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-        requestAnimationFrame(updateBalance);
-      }
-    }
-    updateBalance();
-  </script>
-</body>
-</html>
+</div>
+{% endblock %}

@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Electricity Bill - PayNow{% endblock %}
+
+{% block content %}
+<div class="container py-12">
+    <div class="flex justify-center">
+        <div class="card animate-slide-up" style="width: 100%; max-width: 600px; padding: 2rem;">
+            <a href="{% url 'profile' %}" class="text-muted mb-4 inline-block hover:text-primary transition-colors">
+                <i class="ri-arrow-left-line"></i> Back to Dashboard
+            </a>
+            <div class="text-center mb-8">
+                <div
+                    style="width: 64px; height: 64px; background: #FFF7ED; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: #F97316; font-size: 1.75rem;">
+                    <i class="ri-lightbulb-flash-line"></i>
+                </div>
+                <h2>Pay Electricity Bill</h2>
+                <p class="text-muted">Select your state to proceed to the official board website</p>
+            </div>
+
+            <div class="form-group">
+                <input type="text" id="stateSearch" class="form-control" placeholder="Search your state..."
+                    onkeyup="filterStates()">
+            </div>
+
+            <div class="state-grid" id="stateGrid">
+                <!-- States will be populated here -->
+                <a href="https://www.apspdcl.in/" target="_blank" class="state-item" data-name="Andhra Pradesh">
+                    <div class="state-icon">AP</div>
+                    <span>Andhra Pradesh</span>
+                    <i class="ri-external-link-line ml-auto text-muted"></i>
+                </a>
+                <a href="https://www.tssouthernpower.com/" target="_blank" class="state-item" data-name="Telangana">
+                    <div class="state-icon">TS</div>
+                    <span>Telangana</span>
+                    <i class="ri-external-link-line ml-auto text-muted"></i>
+                </a>
+                <a href="https://bescom.karnataka.gov.in/" target="_blank" class="state-item" data-name="Karnataka">
+                    <div class="state-icon">KA</div>
+                    <span>Karnataka</span>
+                    <i class="ri-external-link-line ml-auto text-muted"></i>
+                </a>
+                <a href="https://www.tangedco.gov.in/" target="_blank" class="state-item" data-name="Tamil Nadu">
+                    <div class="state-icon">TN</div>
+                    <span>Tamil Nadu</span>
+                    <i class="ri-external-link-line ml-auto text-muted"></i>
+                </a>
+                <a href="https://www.mahadiscom.in/" target="_blank" class="state-item" data-name="Maharashtra">
+                    <div class="state-icon">MH</div>
+                    <span>Maharashtra</span>
+                    <i class="ri-external-link-line ml-auto text-muted"></i>
+                </a>
+                <a href="https://www.bsesdelhi.com/" target="_blank" class="state-item" data-name="Delhi">
+                    <div class="state-icon">DL</div>
+                    <span>Delhi</span>
+                    <i class="ri-external-link-line ml-auto text-muted"></i>
+                </a>
+                <a href="https://www.uppcl.org/" target="_blank" class="state-item" data-name="Uttar Pradesh">
+                    <div class="state-icon">UP</div>
+                    <span>Uttar Pradesh</span>
+                    <i class="ri-external-link-line ml-auto text-muted"></i>
+                </a>
+                <a href="https://www.wbsedcl.in/" target="_blank" class="state-item" data-name="West Bengal">
+                    <div class="state-icon">WB</div>
+                    <span>West Bengal</span>
+                    <i class="ri-external-link-line ml-auto text-muted"></i>
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    function filterStates() {
+        const input = document.getElementById('stateSearch');
+        const filter = input.value.toUpperCase();
+        const grid = document.getElementById('stateGrid');
+        const items = grid.getElementsByClassName('state-item');
+
+        for (let i = 0; i < items.length; i++) {
+            const txtValue = items[i].getAttribute('data-name');
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                items[i].style.display = "flex";
+            } else {
+                items[i].style.display = "none";
+            }
+        }
+    }
+</script>
+
+<style>
+    .state-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .state-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        color: var(--text-main);
+        transition: all 0.2s;
+    }
+
+    .state-item:hover {
+        background: var(--background);
+        border-color: var(--primary);
+        transform: translateX(4px);
+    }
+
+    .state-icon {
+        width: 40px;
+        height: 40px;
+        background: var(--primary-light);
+        color: var(--primary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.9rem;
+    }
+
+    .ml-auto {
+        margin-left: auto;
+    }
+</style>
+{% endblock %}

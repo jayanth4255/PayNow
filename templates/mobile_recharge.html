@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mobile Recharge - PayNow{% endblock %}
+
+{% block content %}
+<div class="container py-12">
+    <div class="flex justify-center">
+        <div class="card animate-slide-up" style="width: 100%; max-width: 500px; padding: 2rem;">
+            <a href="{% url 'profile' %}" class="text-muted mb-4 inline-block hover:text-primary transition-colors">
+                <i class="ri-arrow-left-line"></i> Back to Dashboard
+            </a>
+            <div class="text-center mb-6">
+                <div
+                    style="width: 64px; height: 64px; background: var(--primary-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: var(--primary); font-size: 1.75rem;">
+                    <i class="ri-smartphone-line"></i>
+                </div>
+                <h2>Mobile Recharge</h2>
+                <p class="text-muted">Instant recharge for any prepaid number</p>
+            </div>
+
+            {% if error %}
+            <div class="alert alert-error mb-6">
+                {{ error }}
+            </div>
+            {% endif %}
+
+            <form method="POST" action="{% url 'mobile_recharge' %}">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label class="form-label">Mobile Number</label>
+                    <div style="position: relative;">
+                        <span
+                            style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-weight: 600;">+91</span>
+                        <input type="tel" name="recharge_number" class="form-control" placeholder="00000 00000"
+                            style="padding-left: 3.5rem; font-size: 1.1rem; letter-spacing: 1px;" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Select Operator</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="operator-radio">
+                            <input type="radio" name="operator" value="Jio" checked>
+                            <div class="op-box">Jio</div>
+                        </label>
+                        <label class="operator-radio">
+                            <input type="radio" name="operator" value="Airtel">
+                            <div class="op-box">Airtel</div>
+                        </label>
+                        <label class="operator-radio">
+                            <input type="radio" name="operator" value="Vi">
+                            <div class="op-box">Vi</div>
+                        </label>
+                        <label class="operator-radio">
+                            <input type="radio" name="operator" value="BSNL">
+                            <div class="op-box">BSNL</div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Amount</label>
+                    <div style="position: relative;">
+                        <span
+                            style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-main); font-weight: 600;">₹</span>
+                        <input type="number" name="amount" id="amountInput" class="form-control"
+                            placeholder="Enter amount" style="padding-left: 2.5rem; font-size: 1.1rem;" required>
+                    </div>
+                </div>
+
+                <!-- Popular Plans -->
+                <div class="mb-6">
+                    <label class="form-label text-muted text-sm">Popular Plans</label>
+                    <div class="flex gap-2" style="overflow-x: auto; padding-bottom: 0.5rem;">
+                        <div class="plan-chip" onclick="setAmount(239)">₹239</div>
+                        <div class="plan-chip" onclick="setAmount(299)">₹299</div>
+                        <div class="plan-chip" onclick="setAmount(479)">₹479</div>
+                        <div class="plan-chip" onclick="setAmount(719)">₹719</div>
+                        <div class="plan-chip" onclick="setAmount(2999)">₹2999</div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block btn-lg">
+                    Proceed to Pay
+                </button>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    function setAmount(val) {
+        document.getElementById('amountInput').value = val;
+    }
+</script>
+
+<style>
+    .operator-radio input {
+        display: none;
+    }
+
+    .op-box {
+        border: 1px solid var(--border);
+        padding: 0.75rem;
+        text-align: center;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        transition: all 0.2s;
+        font-weight: 500;
+    }
+
+    .operator-radio input:checked+.op-box {
+        border-color: var(--primary);
+        background: var(--primary-light);
+        color: var(--primary);
+        font-weight: 600;
+    }
+
+    .plan-chip {
+        background: var(--background);
+        border: 1px solid var(--border);
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        cursor: pointer;
+        font-weight: 500;
+        white-space: nowrap;
+        transition: all 0.2s;
+    }
+
+    .plan-chip:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+</style>
+{% endblock %}

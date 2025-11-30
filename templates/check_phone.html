@@ -1,75 +1,94 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Check Phone Number</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100">
-  <div class="max-w-md mx-auto mt-16 p-6 bg-white rounded-xl shadow-md">
-    <h2 class="text-xl font-semibold text-center mb-4">Check Phone Number</h2>
+{% extends 'base.html' %}
+{% load static %}
 
-    <form id="phoneForm" method="post">
-      {% csrf_token %}
-      <!-- Hidden input to detect form submission -->
-      <input type="hidden" name="submitted" value="true">
+{% block title %}Sign Up - PayNow{% endblock %}
 
-      <label class="block text-gray-700 font-medium mb-2">Phone Number</label>
-      <input type="text" name="phone" id="phone" value="{{ phone|default:'' }}"
-             class="w-full p-2 border border-gray-300 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400"
-             placeholder="Enter your phone number">
-      <label class="block text-gray-700 font-medium mb-2">Aadhar Number</label>
-      <input type="text" name="aadhar" id="aadhar" value="{{ aadhar|default:'' }}"
-             class="w-full p-2 border border-gray-300 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400"
-             placeholder="Enter your Aadhar Number">
-
-      <button type="submit"
-              class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">Check</button>
-    </form>
-
-    <!-- Show errors only after submit -->
-    {% if submitted %}
-      {% if error %}
-        <div class="bg-red-100 text-red-700 p-3 mt-4 rounded border-l-4 border-red-500">
-          {{ error }}
-        </div>
-      {% endif %}
-
-      {% if existing_error %}
-        <div class="bg-yellow-100 text-yellow-800 p-3 mt-4 rounded border-l-4 border-yellow-500">
-          {{ existing_error }}
-        </div>
-      {% endif %}
-    {% endif %}
-
-    {% if user_created %}
-      <form action="{% url 'set_upi' %}" method="get" class="mt-6 space-y-3">
-        <div>
-          <label class="block text-sm font-medium">Registered UserName</label>
-          <input type="text" readonly value="{{ Registerd_name }}"
-                 class="w-full p-2 border border-gray-300 rounded">
-        </div>
-        <div>
-          <label class="block text-sm font-medium">Bank Name</label>
-          <input type="text" readonly value="{{ bank }}"
-                 class="w-full p-2 border border-gray-300 rounded">
-        </div>     
-        
-        <div>
-          <label class="block text-sm font-medium">Bank Account Number</label>
-          <input type="text" readonly value="{{ account_last }}"
-                 class="w-full p-2 border border-gray-300 rounded">
-        </div>
-        <div>
-          <label class="block text-sm font-medium">Email</label>
-          <input type="email" name="email" , id="email"
-                 class="w-full p-2 border border-gray-300 rounded" required>
+{% block content %}
+<div class="container flex items-center justify-center" style="min-height: 80vh;">
+    <div class="card animate-slide-up" style="width: 100%; max-width: 480px; padding: 2.5rem;">
+        <div class="text-center mb-8">
+            <h2 style="margin-bottom: 0.5rem;">Create Account</h2>
+            <p class="text-muted">Link your bank account instantly</p>
         </div>
 
-        <button type="submit"
-                class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition">Proceed to Set UPI</button>
-      </form>
-    {% endif %}
-  </div>
-</body>
-</html>
+        {% if error %}
+        <div class="alert alert-error mb-6">
+            <i class="ri-error-warning-fill"></i> {{ error }}
+        </div>
+        {% endif %}
+
+        {% if existing_error %}
+        <div class="alert alert-error mb-6">
+            <i class="ri-error-warning-fill"></i> {{ existing_error }}
+        </div>
+        {% endif %}
+
+        {% if user_created %}
+        <div class="text-center animate-slide-up">
+            <div
+                style="width: 80px; height: 80px; background: #ECFDF5; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; color: #059669; font-size: 2.5rem;">
+                <i class="ri-bank-card-fill"></i>
+            </div>
+            <h3 class="text-success mb-2">Account Found!</h3>
+            <div class="card" style="background: var(--background); border: none; margin: 1.5rem 0; text-align: left;">
+                <p class="text-muted text-sm mb-1">Account Holder</p>
+                <h4 class="mb-3">{{ Registerd_name }}</h4>
+                <p class="text-muted text-sm mb-1">Bank Details</p>
+                <div class="flex items-center gap-2">
+                    <i class="ri-bank-line text-primary"></i>
+                    <strong>{{ bank }}</strong> •••• {{ account_last }}
+                </div>
+            </div>
+
+            <a href="{% url 'set_upi' %}?email={{ request.session.email }}" class="btn btn-primary btn-block btn-lg">
+                Set UPI PIN <i class="ri-arrow-right-line"></i>
+            </a>
+        </div>
+        {% else %}
+        <form method="POST" action="{% url 'signin' %}">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label class="form-label">Phone Number</label>
+                <div style="position: relative;">
+                    <i class="ri-smartphone-line"
+                        style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                    <input type="tel" name="phone" class="form-control" placeholder="Linked mobile number"
+                        value="{{ phone }}" style="padding-left: 2.75rem;" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Aadhaar Number</label>
+                <div style="position: relative;">
+                    <i class="ri-fingerprint-line"
+                        style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                    <input type="text" name="aadhar" class="form-control" placeholder="12-digit Aadhaar number"
+                        style="padding-left: 2.75rem;" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <div style="position: relative;">
+                    <i class="ri-mail-line"
+                        style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                    <input type="email" name="email" class="form-control" placeholder="your@email.com"
+                        style="padding-left: 2.75rem;" required>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block btn-lg mt-6">
+                Verify Details <i class="ri-arrow-right-line"></i>
+            </button>
+        </form>
+
+        <div class="text-center mt-6 pt-6" style="border-top: 1px solid var(--border);">
+            <p class="text-muted text-sm">
+                Already have an account? <a href="{% url 'login' %}">Login</a>
+            </p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

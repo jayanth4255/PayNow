@@ -1,272 +1,232 @@
-
-{% extends "base.html" %}
-
-{% block title %}Home - PayNow{% endblock %}
-
-{% block content %}
-
+{% extends 'base.html' %}
 {% load static %}
 
-<section class="bg-white min-h-screen">
-  <div class="max-w-6xl mx-auto px-6">
+{% block title %}PayNow - The Future of Payments{% endblock %}
 
-    <!-- 🔹 Top Bar -->
-    <div class="flex justify-between items-center mb-8 pt-4">
-      <h1 class="text-2xl font-bold mt-8">
-        {% if username %}
-          Hi, Welcome {{ username }}
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <!-- Animated Background -->
+    <div class="hero-bg-shape shape-1"></div>
+    <div class="hero-bg-shape shape-2"></div>
+
+    <div class="container relative z-10">
+        {% if request.session.login_phone %}
+        <!-- Logged In View -->
+        <div class="text-center animate-slide-up">
+            <div
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white mb-6">
+                <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                <span class="text-sm font-medium">Secure Connection Active</span>
+            </div>
+
+            <h1 class="hero-title text-white mb-4">
+                Welcome back, <br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white">
+                    {{ username }}
+                </span>
+            </h1>
+
+            <p class="text-blue-100 text-lg mb-8 max-w-xl mx-auto">
+                Your financial command center is ready. What would you like to do today?
+            </p>
+
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="{% url 'profile' %}"
+                    class="btn btn-white btn-lg shadow-lg hover:scale-105 transition-transform">
+                    <i class="ri-dashboard-3-line mr-2"></i> Go to Dashboard
+                </a>
+                <a href="{% url 'upi-scan' %}" class="btn btn-glass btn-lg hover:bg-white/20 transition-colors">
+                    <i class="ri-qr-scan-2-line mr-2"></i> Scan QR
+                </a>
+            </div>
+        </div>
         {% else %}
-          Hi there, Welcome Guest
+        <!-- Guest View -->
+        <div class="text-center animate-slide-up">
+            <div
+                class="inline-block px-4 py-1.5 rounded-full bg-blue-600/30 text-blue-100 font-semibold text-sm mb-6 border border-blue-500/30">
+                🚀 The #1 Payment App in India
+            </div>
+            <h1 class="hero-title text-white mb-6">
+                Payments made <br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white">Simple &
+                    Secure</span>
+            </h1>
+            <p class="text-blue-100 text-lg mb-8 max-w-2xl mx-auto leading-relaxed">
+                Send money to friends, pay bills, and manage your finances with the most trusted UPI app. Experience
+                lightning-fast transactions today.
+            </p>
+
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="{% url 'signin' %}"
+                    class="btn btn-white btn-lg shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-1">
+                    Get Started <i class="ri-arrow-right-line ml-2"></i>
+                </a>
+                <a href="{% url 'login' %}" class="btn btn-glass btn-lg hover:bg-white/20 transition-colors">
+                    Login
+                </a>
+            </div>
+        </div>
         {% endif %}
-      </h1>
-      <div class="flex gap-3">
-        {% if username %}
-          <a href="{% url 'profile' %}" class="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300 text-sm">Profile</a>
-          <form action="{% url 'logout' %}" method="POST">
-              {% csrf_token %}
-              <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 text-sm">
-                  Logout
-              </button>
-          </form>
-        {% else %}
-          <a href="{% url 'login' %}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm">Login</a>
-          <a href="{% url 'signin' %}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm">Sign Up</a>
-        {% endif %}
-      </div>
     </div>
-
-    {% if username %}
-
-    <!-- 🔹 Main Content -->
-    <div class="text-center mb-12 animate-fadeIn">
-      <h2 class="text-4xl md:text-5xl font-semibold text-gray-900 mb-4">Simple. Secure. Smart.</h2>
-      <p class="text-gray-600 text-lg mb-6">Pay friends, pay bills, shop online, recharge, and more — all from one app.</p>
-      <img src="{% static 'images/wallet_immg.webp' %}" alt="Wallet Image" class="w-60 mx-auto mb-6 animate-bounce">
-      <!-- Buttons in a single line below the image -->
-      <div class="flex flex-row justify-center gap-4 mt-4">
-      <button id="getStartedBtn"
-        class="bg-blue-600 text-white px-5 py-3 rounded-full font-semibold shadow-lg 
-           hover:bg-blue-700 transform hover:scale-105 transition w-64">
-        🚀 Get Started
-      </button>
-      <button id="seeFeaturesBtn"
-        class="bg-white text-blue-600 border border-blue-600 px-5 py-3 rounded-full font-semibold shadow-lg 
-           hover:bg-blue-50 transform hover:scale-105 transition w-64">
-        ⭐ See Features
-      </button>
-      </div>
-    </div>
-
-    <!-- 🔹 Features -->
-    <section id="features" class="bg-gray-50 py-20 animate-fadeIn">
-      <div class="grid md:grid-cols-4 sm:grid-cols-2 gap-8 text-center">
-        <div class="transform hover:scale-110 transition-transform duration-500">
-          <a href="{% url 'upi-scan' %}"><img src="{% static 'images/scan_pay.png' %}" class="h-20 mx-auto mb-3" alt="scan and pay" /></a>
-          <p class="font-medium">Scan to Pay</p>
-        </div>     
-        
-        <div class="transform hover:scale-110 transition-transform duration-500">
-          <a href="{% url 'transfer_money' %}"><img src="{% static 'images/PayaFriend.png' %}" class="h-20 mx-auto mb-3" alt="Send to Number" /></a>
-          <p class="font-medium">Send to Mobile Number</p>
-        </div>
-        
-        <div class="transform hover:scale-110 transition-transform duration-500">
-          <a href="{% url 'transaction_history' %}"><img src="{% static 'images/transaction_history.png' %}" class="h-20 mx-auto mb-3" alt="Transaction History" /></a>
-          <p class="font-medium">Transaction History</p>
-        </div>
-        <div class="transform hover:scale-110 transition-transform duration-500">
-          <a href="{% url 'balance' %}"><img src="{% static 'images/balance_icon.png' %}" class="h-20 mx-auto mb-3" alt="Check Balance" /></a>
-          <p class="font-medium">Check Balance</p>
-        </div>
-      </div>
-    </section>
-
-    <section class="bg-blue-600 text-white py-20 animate-fadeIn">
-      <div class="max-w-4xl mx-auto text-center px-6">
-        <h2 class="text-3xl font-bold mb-4">Trusted by Millions</h2>
-        <p class="text-lg mb-6">Over 100 million users trust PayNow for daily payments. It's time you joined them.</p>
-        <a href="/signup/" class="bg-white text-blue-600 px-6 py-3 rounded-full font-medium hover:bg-gray-100 transition-transform transform hover:scale-105">Join Now</a>
-      </div>
-    </section>
-
-    {% else %}
-    <!-- 🔹 Guest Mode -->
-    <div class="relative mt-16 text-center animate-fadeIn overflow-hidden">
-  <!-- Background gradient glow -->
-  <div class="absolute inset-0 bg-gradient-to-b from-green-50 via-white to-blue-50 -z-10"></div>
-
-  <!-- Floating confetti (fun touch) -->
-  <div class="absolute inset-0 pointer-events-none">
-    <img src="{% static 'images/confetti.png' %}" class="w-full h-full object-cover opacity-20 animate-pulse" alt="">
-  </div>
-
-  <!-- Main image with glowing pulse -->
-  <div class="relative w-64 mx-auto">
-    <img src="{% static 'images/wallet_immg.webp' %}" 
-         class="mx-auto w-64 animate-bounce-slow drop-shadow-xl" 
-         alt="UPI Promo">
-    <div class="absolute inset-0 rounded-full border-4 border-green-400 animate-ping opacity-30"></div>
-  </div>
-
-  <!-- Main heading -->
-  <h1 class="mt-6 text-4xl font-extrabold text-gray-800 leading-tight">
-    Join <span class="text-green-600">PayNow</span> Today & <br>
-    Get Your First Reward in <span class="text-blue-500">5 Minutes</span> 🚀
-  </h1>
-
-  <!-- Subtext -->
-  <p class="mt-4 text-lg text-gray-600 max-w-xl mx-auto">
-    The fastest, safest & most rewarding way to send and receive money.  
-    <span class="font-semibold text-yellow-500">Cashback guaranteed</span> on your first transfer!
-  </p>
-
-  <!-- Benefits section -->
-  <div class="flex flex-wrap justify-center gap-6 mt-8 text-left max-w-3xl mx-auto">
-    <div class="bg-white shadow-lg rounded-xl p-5 flex items-center gap-3 hover:shadow-2xl hover:scale-105 transition transform">
-      <span class="bg-green-100 text-green-600 p-3 rounded-full text-xl">⚡</span>
-      <span class="text-gray-800 font-medium">Lightning-Fast UPI Transfers</span>
-    </div>
-    <div class="bg-white shadow-lg rounded-xl p-5 flex items-center gap-3 hover:shadow-2xl hover:scale-105 transition transform">
-      <span class="bg-yellow-100 text-yellow-600 p-3 rounded-full text-xl">🎁</span>
-      <span class="text-gray-800 font-medium">Instant Rewards & Cashback</span>
-    </div>
-    <div class="bg-white shadow-lg rounded-xl p-5 flex items-center gap-3 hover:shadow-2xl hover:scale-105 transition transform">
-      <span class="bg-blue-100 text-blue-600 p-3 rounded-full text-xl">🛡️</span>
-      <span class="text-gray-800 font-medium">Bank-Grade Security</span>
-    </div>
-  </div>
-
-  <!-- Call-to-action buttons -->
-  <div class="flex flex-col sm:flex-row justify-center gap-4 mt-10">
-    <a href="{% url 'signin' %}" 
-       class="bg-green-500 text-white px-10 py-4 rounded-full text-lg font-semibold 
-              shadow-lg hover:bg-green-600 transform hover:scale-110 hover:shadow-2xl transition">
-      🎉 Create Free Account
-    </a>
-    <a href="{% url 'login' %}" 
-       class="bg-blue-500 text-white px-10 py-4 rounded-full text-lg font-semibold 
-              shadow-lg hover:bg-blue-600 transform hover:scale-110 hover:shadow-2xl transition">
-      🔑 Login
-    </a>
-  </div>
-
-  <!-- Trust signal -->
-  <p class="mt-6 text-sm text-gray-500">
-    ✅ Trusted by <span class="font-bold text-gray-700">10,000+ happy users</span> across India
-  </p>
-
-  <!-- Urgency line -->
-  <p class="mt-2 text-red-500 font-medium animate-pulse">
-    🎯 Sign up before midnight & get ₹50 bonus instantly!
-  </p>
-</div>
-
-<!-- Custom slow bounce -->
-<style>
-  @keyframes bounce-slow {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-12px); }
-  }
-  .animate-bounce-slow {
-    animation: bounce-slow 2s infinite;
-  }
-</style>
-
-    {% endif %}
-
-  </div>
 </section>
 
-<!-- 🔹 Animations -->
-<style>
-@keyframes fadeIn {
-  from {opacity: 0;}
-  to {opacity: 1;}
-}
-.animate-fadeIn {
-  animation: fadeIn 1.2s ease-in-out;
-}
-</style>
+<!-- Features Grid -->
+<section class="py-20 bg-gray-50">
+    <div class="container">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">Why Choose PayNow?</h2>
+            <p class="text-gray-600 max-w-2xl mx-auto">Experience the next generation of digital payments with features
+                designed for your lifestyle.</p>
+        </div>
 
-<!-- 🔹 See Features Interactive Modal -->
-<div id="featuresModal"
-     class="fixed inset-0 bg-black bg-opacity-60 hidden flex items-center justify-center z-50">
-  <div class="bg-white rounded-2xl shadow-2xl w-[600px] p-6 text-center animate-fadeIn">
-    <h2 class="text-2xl font-bold mb-4">⭐ PayNow Features</h2>
-    <div class="grid grid-cols-3 gap-6">
-      <div class="p-4 bg-gray-50 rounded-lg hover:scale-105 transition">
-        <p class="font-semibold">Send Money</p>
-        <small>Instant UPI transfer</small>
-      </div>
-      <div class="p-4 bg-gray-50 rounded-lg hover:scale-105 transition">
-        <p class="font-semibold">History</p>
-        <small>Smart timeline view</small>
-      </div>
-      <div class="p-4 bg-gray-50 rounded-lg hover:scale-105 transition">
-        <p class="font-semibold">Balance</p>
-        <small>One-tap check</small>
-      </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Feature 1 -->
+            <div class="feature-card group">
+                <div
+                    class="icon-wrapper bg-blue-100 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                    <i class="ri-flashlight-fill text-3xl"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3">Lightning Fast</h3>
+                <p class="text-gray-600 leading-relaxed">Experience zero-latency payments. Money transfers happen in
+                    milliseconds, not minutes.</p>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="feature-card group">
+                <div
+                    class="icon-wrapper bg-purple-100 text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-colors">
+                    <i class="ri-shield-check-fill text-3xl"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3">Bank-Grade Security</h3>
+                <p class="text-gray-600 leading-relaxed">Your money is protected by 256-bit encryption and multi-factor
+                    authentication.</p>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="feature-card group">
+                <div
+                    class="icon-wrapper bg-green-100 text-green-600 group-hover:bg-green-600 group-hover:text-white transition-colors">
+                    <i class="ri-gift-fill text-3xl"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3">Rewards & Cashback</h3>
+                <p class="text-gray-600 leading-relaxed">Earn exciting rewards and cashback on every transaction you
+                    make.</p>
+            </div>
+        </div>
     </div>
-    <button onclick="closeFeatures()" class="mt-6 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
-      Close
-    </button>
-  </div>
-</div>
+</section>
 
-<!-- 🔹 Animations + JS -->
-<style>
-  @keyframes fadeIn { from {opacity:0; transform:scale(0.9);} to {opacity:1; transform:scale(1);} }
-  .animate-fadeIn { animation: fadeIn 0.3s ease-in-out; }
-</style>
-
-<script>
-  // Open modals
-  document.getElementById("getStartedBtn").onclick = () => {
-    document.getElementById("onboardingModal").classList.remove("hidden");
-    loadStep(1);
-  };
-  document.getElementById("seeFeaturesBtn").onclick = () =>
-    document.getElementById("featuresModal").classList.remove("hidden");
-
-  // Onboarding steps
-  let step = 1;
-  const steps = {
-    1: "✅ Step 1: Add your Bank Account securely.",
-    2: "💸 Step 2: Send ₹1 to test – instant transfer!",
-    3: "🎁 Step 3: Earn your reward."
-  };
-  function loadStep(s) {
-    step = s;
-    document.getElementById("onboardingSteps").innerHTML =
-      `<p class='text-lg'>${steps[s]}</p>`;
-    if (s === 3) {
-      document.getElementById("nextStepBtn").innerText = "Finish 🎉";
-    }
-  }
-  document.getElementById("nextStepBtn").onclick = () => {
-    if (step < 3) loadStep(step + 1);
-    else {
-      document.getElementById("onboardingModal").classList.add("hidden");
-    }
-  };
-  function closeOnboarding(){ document.getElementById("onboardingModal").classList.add("hidden"); }
-  function closeFeatures(){ document.getElementById("featuresModal").classList.add("hidden"); }
-</script>
-
-<!-- 🔹 Gamified Onboarding Modal -->
-<div id="onboardingModal"
-     class="fixed inset-0 bg-black bg-opacity-60 hidden flex items-center justify-center z-50">
-  <div class="bg-white rounded-2xl shadow-2xl w-96 p-6 text-center animate-fadeIn">
-    <h2 class="text-2xl font-bold mb-4">🚀 Let’s Get Started!</h2>
-    <div id="onboardingSteps">
-      <!-- Step content injected here by JS -->
+<!-- Trust Section -->
+<section class="py-12 bg-white border-t border-gray-100">
+    <div class="container">
+        <div
+            class="flex flex-wrap justify-center gap-8 md:gap-16 opacity-70 grayscale hover:grayscale-0 transition-all duration-500">
+            <div class="flex items-center gap-2 text-xl font-bold text-gray-400">
+                <i class="ri-bank-line"></i> HDFC Bank
+            </div>
+            <div class="flex items-center gap-2 text-xl font-bold text-gray-400">
+                <i class="ri-global-line"></i> SBI
+            </div>
+            <div class="flex items-center gap-2 text-xl font-bold text-gray-400">
+                <i class="ri-secure-payment-line"></i> ICICI Bank
+            </div>
+            <div class="flex items-center gap-2 text-xl font-bold text-gray-400">
+                <i class="ri-shield-star-line"></i> Axis Bank
+            </div>
+        </div>
     </div>
-    <button id="nextStepBtn"
-            class="mt-6 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
-      Next ➡️
-    </button>
-    <button onclick="closeOnboarding()" class="mt-3 text-gray-500 text-sm">Skip</button>
-  </div>
-</div>
+</section>
 
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, #0066FF 0%, #0044AA 100%);
+        padding: 8rem 0 6rem;
+        position: relative;
+        overflow: hidden;
+        color: white;
+    }
+
+    .hero-bg-shape {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(80px);
+        z-index: 1;
+        opacity: 0.4;
+    }
+
+    .shape-1 {
+        top: -100px;
+        left: -100px;
+        width: 500px;
+        height: 500px;
+        background: #4facfe;
+    }
+
+    .shape-2 {
+        bottom: -100px;
+        right: -100px;
+        width: 600px;
+        height: 600px;
+        background: #00f2fe;
+    }
+
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 800;
+        line-height: 1.2;
+        letter-spacing: -0.02em;
+    }
+
+    .btn-white {
+        background: white;
+        color: var(--primary);
+        font-weight: 600;
+        border: none;
+    }
+
+    .btn-glass {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        font-weight: 600;
+    }
+
+    .feature-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        border: 1px solid var(--border);
+    }
+
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        border-color: transparent;
+    }
+
+    .icon-wrapper {
+        width: 64px;
+        height: 64px;
+        border-radius: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2.5rem;
+        }
+
+        .hero-section {
+            padding: 6rem 0 4rem;
+        }
+    }
+</style>
 {% endblock %}

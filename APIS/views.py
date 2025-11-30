@@ -75,6 +75,41 @@ def profile_view(request):
 
     user_upi_id = f"{bank_user.registered_name}{bank_user.bank_account_num[-4:]}@PayNow"
 
+    # Get transaction statistics
+    from datetime import datetime, timedelta
+    from django.db.models import Sum, Count
+    
+    # Get current month transactions
+    now = timezone.now()
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    
+    # Transactions where user is sender (money sent)
+    sent_transactions = Transactions.objects.filter(
+        sender_phone_number=phone,
+        transaction_date__gte=month_start
+    )
+    total_sent = sent_transactions.aggregate(Sum('transaction_amount'))['transaction_amount__sum'] or 0
+    sent_count = sent_transactions.count()
+    
+    # Transactions where user is receiver (money received)
+    received_transactions = Transactions.objects.filter(
+        receiver_phone_number=phone,
+        transaction_date__gte=month_start
+    )
+    total_received = received_transactions.aggregate(Sum('transaction_amount'))['transaction_amount__sum'] or 0
+    received_count = received_transactions.count()
+    
+    # Recent transactions (last 5)
+    all_transactions = Transactions.objects.filter(
+        Q(sender_phone_number=phone) | Q(receiver_phone_number=phone)
+    ).order_by('-transaction_date')[:5]
+    
+    # Total transactions this month
+    total_transactions_month = sent_count + received_count
+    
+    # Calculate average transaction
+    avg_transaction = (total_sent + total_received) / total_transactions_month if total_transactions_month > 0 else 0
+
     context = {
         'name': bank_user.registered_name,
         'phone': bank_user.phone,
@@ -84,6 +119,17 @@ def profile_view(request):
         'profile_image_url': profile_image_url,
         'initial': first_letter,
         'upi_id': user_upi_id,
+        'balance': bank_user.balance,
+        'aadhaar': bank_user.aadhaar,
+        # Transaction stats
+        'total_sent': total_sent,
+        'total_received': total_received,
+        'sent_count': sent_count,
+        'received_count': received_count,
+        'total_transactions_month': total_transactions_month,
+        'avg_transaction': round(avg_transaction, 2),
+        'recent_transactions': all_transactions,
+        'logged_in_phone': phone,
     }
     return render(request, 'profile.html', context)
 
@@ -238,15 +284,19 @@ class TransferMoney(APIView):
 # --------------------------
 @method_decorator(cache_control(no_cache=True, must_revalidate=True, no_store=True), name='dispatch')
 class Receiver(APIView):
+    def get(self, request):
+        # Redirect to transfer page if accessed directly via GET
+        return redirect('transfer_money')
+
     def post(self, request):
         receiver_phone_number = request.session.get('receiver_phone_number')
         amount = request.POST.get('amount')
         request.session['amount'] = amount
         phone = request.session.get('login_phone')
-        context = request.session.get('context')
+        context = request.session.get('context', {})
 
         if not phone or not amount:
-            return render(request, 'receiver_page.html', context)
+            return render(request, 'receiver_page.html', {**context, 'error': "Please enter a valid amount."})
 
         serializer = ReceiverMoneySerializer(data={
             'receiver_phone_number': receiver_phone_number,
@@ -260,7 +310,8 @@ class Receiver(APIView):
         if receiver_phone_number == phone:
             return render(request, 'transfer_money.html', {**(context or {}), 'error': "You can't transfer money to yourself."})
 
-        return render(request, 'receiver_page.html')
+        # Pass context back to template so recipient details don't disappear
+        return render(request, 'receiver_page.html', {**context, 'error': "Invalid amount or data."})
 
 
 # --------------------------
@@ -281,6 +332,66 @@ class VerifyPin(APIView):
 
         if not sender_phone_number or not amount or not receiver_phone_number:
             return render(request, 'enter_pin.html', {'error': 'Session expired. Please try again.'})
+
+        recharge_details = request.session.get('recharge_details')
+        
+        if receiver_phone_number == "RECHARGE" and recharge_details:
+             # Handle Recharge Transaction
+             try:
+                sender = BankUser.objects.get(phone=sender_phone_number)
+                pin_obj = userprofile.objects.get(phone=sender_phone_number)
+                sender_pin = pin_obj.pin
+             except (BankUser.DoesNotExist, userprofile.DoesNotExist):
+                return redirect('login')
+                
+             receiver_name = f"{recharge_details['operator']} Recharge"
+             receiver_upi_id = "billpay@paynow"
+             receiver_account_number = "BILLPAY"
+             receiver_bank_name = recharge_details['operator']
+             
+             # Verify PIN
+             if sender_pin != entered_pin:
+                 return render(request, 'enter_pin.html', {'error': 'Invalid PIN'})
+                 
+             # Check Balance
+             if sender.balance < float(amount):
+                 return render(request, 'enter_pin.html', {'error': 'Insufficient Balance'})
+                 
+             # Deduct Balance
+             sender.balance -= float(amount)
+             sender.save()
+             
+             # Create Transaction Record
+             transaction_id = str(uuid.uuid4()).replace("-", "").upper()[:12]
+             ist = pytz.timezone("Asia/Kolkata")
+             transaction_date = timezone.now().astimezone(ist)
+             
+             Transactions.objects.create(
+                transaction_id=transaction_id,
+                transaction_date=transaction_date,
+                sender_name=sender.registered_name,
+                sender_phone_number=sender_phone_number,
+                sender_bank_name=sender.bank_name,
+                sender_bank_account=sender.bank_account_num,
+                sender_upi_id=f"{sender.registered_name}@paynow",
+                transaction_amount=amount,
+                receiver_name=receiver_name,
+                receiver_phone_number=recharge_details['number'], # Store recharge number here
+                receiver_bank_name=receiver_bank_name,
+                receiver_bank_account=receiver_account_number,
+                receiver_upi_id=receiver_upi_id
+             )
+             
+             # Clear session
+             request.session.pop('recharge_details', None)
+             request.session.pop('receiver_phone_number', None)
+             
+             return render(request, 'success.html', {
+                'amount': amount,
+                'receiver_phone_number': recharge_details['number'],
+                'reference_id': transaction_id,
+                'timestamp': transaction_date,
+             })
 
         try:
             sender = BankUser.objects.get(phone=sender_phone_number)
@@ -559,3 +670,91 @@ def transaction_history(request):
     })
 
 
+
+# --------------------------
+# Mobile Recharge View
+# --------------------------
+@method_decorator(cache_control(no_cache=True, must_revalidate=True, no_store=True), name='dispatch')
+class MobileRecharge(APIView):
+    def get(self, request):
+        return render(request, 'mobile_recharge.html')
+
+    def post(self, request):
+        phone = request.session.get('login_phone')
+        if not phone:
+            return redirect('login')
+
+        recharge_number = request.POST.get('recharge_number')
+        operator = request.POST.get('operator')
+        amount = request.POST.get('amount')
+        
+        if not recharge_number or not amount:
+             return render(request, 'mobile_recharge.html', {'error': 'Please enter valid details.'})
+
+        # Store details in session for PIN verification
+        request.session['receiver_phone_number'] = "RECHARGE" # Special flag
+        request.session['recharge_details'] = {
+            'number': recharge_number,
+            'operator': operator,
+            'amount': amount
+        }
+        request.session['amount'] = amount
+        
+        # Context for PIN page
+        request.session['context'] = {
+            'Receiver_name': f"{operator} Recharge",
+            'account_last': recharge_number[-4:],
+            'bank': "Prepaid",
+            'amount': amount
+        }
+        
+        return redirect('enter_pin')
+
+
+# --------------------------
+# Electricity Bill View
+# --------------------------
+@method_decorator(cache_control(no_cache=True, must_revalidate=True, no_store=True), name='dispatch')
+class ElectricityBill(APIView):
+    def get(self, request):
+        return render(request, 'electricity_bill.html')
+
+
+# --------------------------
+# Bus Booking View
+# --------------------------
+@method_decorator(cache_control(no_cache=True, must_revalidate=True, no_store=True), name='dispatch')
+class BusBooking(APIView):
+    def get(self, request):
+        return render(request, 'bus_booking.html')
+        
+    def post(self, request):
+        # Redirect logic is handled in frontend, but we can process here if needed
+        return render(request, 'bus_booking.html')
+
+
+# --------------------------
+# Generic Utility View
+# --------------------------
+@method_decorator(cache_control(no_cache=True, must_revalidate=True, no_store=True), name='dispatch')
+class UtilityBill(APIView):
+    def get(self, request):
+        utility_type = request.GET.get('type', 'Utility')
+        return render(request, 'utility_bill.html', {'type': utility_type})
+
+    def post(self, request):
+        # Simulate bill fetch
+        utility_type = request.POST.get('type')
+        consumer_number = request.POST.get('consumer_number')
+        
+        # Simulated bill amount
+        import random
+        bill_amount = random.choice([450, 780, 1200, 340, 890])
+        
+        context = {
+            'type': utility_type,
+            'consumer_number': consumer_number,
+            'bill_amount': bill_amount,
+            'fetched': True
+        }
+        return render(request, 'utility_bill.html', context)

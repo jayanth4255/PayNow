@@ -1,238 +1,55 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Enter UPI PIN</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    body {
-      background: linear-gradient(135deg, #e0eafc, #cfdef3);
-      font-family: 'Segoe UI', Tahoma, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-    }
+{% extends 'base.html' %}
+{% load static %}
 
-    .card {
-      background: #fff;
-      padding: 2rem;
-      border-radius: 1.5rem;
-      box-shadow: 0 12px 40px rgba(0,0,0,0.1);
-      width: 320px;
-      text-align: center;
-      animation: fadeIn 0.6s ease-in-out;
-    }
+{% block title %}Enter PIN - PayNow{% endblock %}
 
-    h2 {
-      font-size: 1.5rem;
-      font-weight: 600;
-      color: #1e3a8a;
-      margin-bottom: 1.5rem;
-    }
+{% block content %}
+<div class="container flex items-center justify-center" style="min-height: 80vh;">
+    <div class="card animate-slide-up" style="width: 100%; max-width: 400px; padding: 2.5rem;">
 
-    .pin-dots {
-      display: flex;
-      justify-content: center;
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-    }
+        <div class="flex justify-between items-center mb-8">
+            <h3 style="margin: 0;">Enter UPI PIN</h3>
+            <div
+                style="background: var(--surface); padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border);">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo-vector.svg" alt="UPI"
+                    style="height: 20px; opacity: 0.8;">
+            </div>
+        </div>
 
-    .dot {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background: #d1d5db;
-      transition: all 0.2s ease;
-    }
+        <div class="flex justify-between items-center mb-8 p-3"
+            style="background: var(--background); border-radius: 8px;">
+            <div class="text-sm">
+                <span class="text-muted">Paying</span> <br>
+                <strong>{{ Receiver_name|default:"Merchant" }}</strong>
+            </div>
+            <div class="text-right">
+                <span class="text-muted text-sm">Amount</span> <br>
+                <strong style="font-size: 1.2rem;">₹{{ amount }}</strong>
+            </div>
+        </div>
 
-    .dot.filled {
-      background: #1e3a8a;
-      box-shadow: 0 0 8px #1e3a8a80;
-      animation: pulse 0.3s;
-    }
+        {% if error %}
+        <div class="alert alert-error text-center mb-6">
+            {{ error }}
+        </div>
+        {% endif %}
 
-    @keyframes pulse {
-      0% { transform: scale(0.8); opacity: 0.7; }
-      50% { transform: scale(1.2); opacity: 1; }
-      100% { transform: scale(1); opacity: 1; }
-    }
+        <form method="POST" action="{{ form_action_url|default:request.path }}">
+            {% csrf_token %}
 
-    .pin-pad {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 0.8rem;
-    }
+            <div class="form-group text-center">
+                <div class="pin-input-wrapper">
+                    <input type="password" name="pin" class="form-control" placeholder="• • • • • •" maxlength="6"
+                        style="font-size: 2.5rem; letter-spacing: 0.5rem; text-align: center; border: none; border-bottom: 2px solid var(--primary); border-radius: 0; background: transparent; box-shadow: none;"
+                        required autocomplete="off" autofocus>
+                </div>
+                <p class="text-muted text-sm mt-4"><i class="ri-lock-fill"></i> Your PIN is encrypted</p>
+            </div>
 
-    .pin-pad button {
-      padding: 0.8rem;
-      font-size: 1.1rem;
-      font-weight: 600;
-      border-radius: 0.75rem;
-      transition: all 0.2s ease;
-      cursor: pointer;
-      border: none;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    }
-
-    .btn-number {
-      background: #3b82f6;
-      color: #fff;
-    }
-
-    .btn-number:hover {
-      transform: scale(1.05);
-      box-shadow: 0 6px 16px rgba(59,130,246,0.3);
-    }
-
-    .btn-delete {
-      background: #ef4444;
-      color: #fff;
-    }
-
-    .btn-delete:hover {
-      transform: scale(1.05);
-      box-shadow: 0 6px 16px rgba(239,68,68,0.3);
-    }
-
-    .btn-submit {
-      background: #10b981;
-      color: #fff;
-      grid-column: span 3;
-    }
-
-    .btn-submit:hover {
-      transform: scale(1.05);
-      box-shadow: 0 6px 16px rgba(16,185,129,0.3);
-    }
-
-    .error-box {
-      background: #fee2e2;
-      color: #b91c1c;
-      padding: 0.6rem 1rem;
-      border-radius: 0.75rem;
-      margin-top: 1rem;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      animation: shake 0.4s ease;
-    }
-
-    @keyframes fadeIn {
-      from {opacity: 0; transform: translateY(10px);}
-      to {opacity: 1; transform: translateY(0);}
-    }
-
-    @keyframes shake {
-      0% { transform: translateX(0); }
-      25% { transform: translateX(-4px); }
-      50% { transform: translateX(4px); }
-      75% { transform: translateX(-4px); }
-      100% { transform: translateX(0); }
-    }
-
-    /* 🔹 Loading Overlay */
-    #loadingOverlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.5);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 50;
-      display: none;
-    }
-
-    .loader {
-      border: 4px solid #3b82f6;
-      border-top: 4px solid transparent;
-      border-radius: 50%;
-      width: 48px;
-      height: 48px;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-  </style>
-</head>
-<body>
-
-  <div class="card">
-    <h2>Enter UPI PIN</h2>
-
-    <form id="pin-form" method="POST" action="{{ form_action_url }}">
-      {% csrf_token %}
-      <input type="hidden" name="pin" id="pin" />
-
-      <!-- PIN Dots -->
-      <div class="pin-dots">
-        <div class="dot" id="dot1"></div>
-        <div class="dot" id="dot2"></div>
-        <div class="dot" id="dot3"></div>
-        <div class="dot" id="dot4"></div>
-      </div>
-
-      <!-- PIN Pad -->
-      <div class="pin-pad">
-        {% for i in "123456789" %}
-        <button type="button" class="btn-number" onclick="addDigit('{{ i }}')">{{ i }}</button>
-        {% endfor %}
-        <button type="button" class="btn-delete" onclick="deleteDigit()">Del</button>
-        <button type="button" class="btn-number" onclick="addDigit('0')">0</button>
-        <button type="submit" class="btn-submit">Submit</button>
-      </div>
-    </form>
-
-    {% if error %}
-      <div class="error-box">⚠️ {{ error }}</div>
-    {% endif %}
-  </div>
-
-  <!-- 🔹 Loading Overlay -->
-  <div id="loadingOverlay">
-    <div class="bg-white p-6 rounded-xl flex flex-col items-center">
-      <div class="loader mb-4"></div>
-      <p class="text-blue-700 font-medium">Processing your PIN...</p>
+            <button type="submit" class="btn btn-primary btn-block btn-lg mt-6">
+                <i class="ri-check-line"></i> Submit
+            </button>
+        </form>
     </div>
-  </div>
-
-  <script>
-    let pin = "";
-
-    function updateDots() {
-      for (let i = 1; i <= 4; i++) {
-        const dot = document.getElementById("dot" + i);
-        if (i <= pin.length) {
-          dot.classList.add("filled");
-        } else {
-          dot.classList.remove("filled");
-        }
-      }
-    }
-
-    function addDigit(d) {
-      if (pin.length < 4) {
-        pin += d;
-        updateDots();
-      }
-    }
-
-    function deleteDigit() {
-      if (pin.length > 0) {
-        pin = pin.slice(0, -1);
-        updateDots();
-      }
-    }
-
-    // Show loading on submit
-    document.getElementById("pin-form").addEventListener("submit", function () {
-      document.getElementById("pin").value = pin;
-      document.getElementById("loadingOverlay").style.display = "flex";
-    });
-  </script>
-
-</body>
-</html>
+</div>
+{% endblock %}

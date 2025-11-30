@@ -1,34 +1,28 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>QR Scanner</title>
-  <script src="https://unpkg.com/html5-qrcode"></script>
-</head>
-<body>
-  <h2>Scan QR Code</h2>
-  <div id="reader" style="width: 300px;"></div>
-  <p>Decoded Data: <span id="result"></span></p>
+{% extends 'base.html' %}
+{% load static %}
 
-  <script>
-    const result = document.getElementById("result");
+{% block title %}Scan & Pay - PayNow{% endblock %}
 
-    function onScanSuccess(decodedText) {
-      result.textContent = decodedText;
-      console.log("✅ QR Data:", decodedText);
-    }
+{% block content %}
+<div class="container flex items-center justify-center" style="min-height: 80vh;">
+    <div class="card text-center animate-fade-in" style="width: 100%; max-width: 400px;">
+        <div style="font-size: 4rem; color: var(--primary); margin-bottom: 1rem;">
+            <i class="ri-qr-scan-2-line"></i>
+        </div>
+        <h2>Scan & Pay</h2>
+        <p class="text-muted mt-2">Scan any UPI QR code to pay instantly.</p>
 
-    function onScanFailure(error) {
-      // console.warn(`QR error = ${error}`);
-    }
+        <div class="mt-8 p-8"
+            style="background: var(--bg-body); border-radius: var(--radius-md); border: 2px dashed var(--border);">
+            <p class="text-muted">Camera access required</p>
+            <button class="btn btn-primary mt-4">
+                <i class="ri-camera-fill" style="margin-right: 0.5rem;"></i> Open Camera
+            </button>
+        </div>
 
-    const html5QrCode = new Html5Qrcode("reader");
-    html5QrCode.start(
-      { facingMode: "environment" }, // back camera
-      { fps: 10, qrbox: 250 },
-      onScanSuccess,
-      onScanFailure
-    );
-  </script>
-</body>
-</html>
+        <div class="mt-6">
+            <a href="{% url 'profile' %}" class="text-muted text-sm">Cancel</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

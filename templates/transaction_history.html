@@ -1,191 +1,214 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Transaction History</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    .circle-initial {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      color: white;
-    }
-    /* Smooth modal animation */
-    .modal-enter {
-      opacity: 0;
-      transform: scale(0.95);
-      transition: all 0.2s ease-in-out;
-    }
-    .modal-active {
-      opacity: 1 !important;
-      transform: scale(1) !important;
-    }
-  </style>
-</head>
-<body>
-  <div class="fixed top-8 left-8 z-40"></div>
-    <button onclick="window.history.back()" class="flex items-center text-blue-600 hover:text-blue-800 font-semibold py-2 px-3 rounded transition bg-white shadow">
-      &#8592; Back
-    </button>
-  </div>
-<body class="bg-gray-100 min-h-screen py-10">
-  <div class="max-w-3xl mx-auto px-4">
-    <h2 class="text-2xl font-semibold mb-6">Transaction History</h2>
+{% extends 'base.html' %}
+{% load static %}
 
-    <!-- 🔍 Search -->
-    <div class="mb-6">
-      <input id="searchInput" type="text" placeholder="🔍 Search by name..."
-             class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring focus:ring-blue-300"
-             onkeyup="filterTransactions()" />
+{% block title %}History - PayNow{% endblock %}
+
+{% block content %}
+<div class="container py-12">
+    <div class="flex justify-between items-center mb-6">
+        <h2>Transaction History</h2>
+        <div class="flex gap-2">
+            <button class="btn btn-outline btn-sm"><i class="ri-filter-3-line"></i> Filter</button>
+            <button class="btn btn-outline btn-sm"><i class="ri-download-line"></i> Download</button>
+        </div>
     </div>
 
-    <!-- 📜 Transaction List -->
-    <div id="transactionList" class="space-y-4">
-      {% for txn in transactions %}
-      <div class="transaction-card bg-white shadow rounded-lg px-5 py-4 flex justify-between items-center cursor-pointer hover:shadow-xl hover:scale-[1.01] transition"
-           onclick="openModal('modal-{{ txn.id }}')">
-
-        <!-- Avatar + Name -->
-        <div class="flex items-center space-x-3">
-          <div class="circle-initial {% if txn.sender_phone_number == logged_in_phone %}bg-red-500{% else %}bg-green-500{% endif %}">
-            {% if txn.sender_phone_number == logged_in_phone %}
-              {{ txn.receiver_name|slice:":1"|upper }}
-            {% else %}
-              {{ txn.sender_name|slice:":1"|upper }}
-            {% endif %}
-          </div>
-          <div>
-            <div class="font-medium">
-              {% if txn.sender_phone_number == logged_in_phone %}
-                {{ txn.receiver_name }}
-              {% else %}
-                {{ txn.sender_name }}
-              {% endif %}
-            </div>
-            <div class="text-sm text-gray-500">
-              {% if txn.sender_phone_number == logged_in_phone %}
-                Sent
-              {% else %}
-                Received
-              {% endif %}
-            </div>
-          </div>
+    <div class="card" style="padding: 0; overflow: hidden;">
+        {% if transactions %}
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead style="background: var(--background); border-bottom: 1px solid var(--border);">
+                    <tr>
+                        <th
+                            style="padding: 1rem 1.5rem; text-align: left; font-weight: 600; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">
+                            Date & Time</th>
+                        <th
+                            style="padding: 1rem 1.5rem; text-align: left; font-weight: 600; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">
+                            Description</th>
+                        <th
+                            style="padding: 1rem 1.5rem; text-align: left; font-weight: 600; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">
+                            Reference ID</th>
+                        <th
+                            style="padding: 1rem 1.5rem; text-align: right; font-weight: 600; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">
+                            Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in transactions %}
+                    <tr style="border-bottom: 1px solid var(--border); transition: background 0.2s; cursor: pointer;"
+                        onclick="showTransactionDetails('{{ t.transaction_id }}', '{{ t.transaction_date|date:" M d, Y
+                        h:i A" }}', '{{ t.transaction_amount }}'
+                        , '{{ t.receiver_name|default:t.receiver_phone_number }}' , '{{ t.receiver_phone_number }}'
+                        , '{% if t.sender_phone_number == logged_in_phone %}True{% else %}False{% endif %}' )">
+                        <td style="padding: 1.25rem 1.5rem;">
+                            <div style="font-weight: 600;">{{ t.transaction_date|date:"M d, Y" }}</div>
+                            <div class="text-muted text-sm">{{ t.transaction_date|date:"h:i A" }}</div>
+                        </td>
+                        <td style="padding: 1.25rem 1.5rem;">
+                            {% if t.sender_phone_number == logged_in_phone %}
+                            <div class="flex items-center gap-3">
+                                <div
+                                    style="width: 40px; height: 40px; background: #FEF2F2; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #EF4444;">
+                                    <i class="ri-arrow-right-up-line"></i>
+                                </div>
+                                <div>
+                                    <div style="font-weight: 600;">Paid to {{
+                                        t.receiver_name|default:t.receiver_phone_number }}</div>
+                                    <div class="text-muted text-sm">Transfer</div>
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="flex items-center gap-3">
+                                <div
+                                    style="width: 40px; height: 40px; background: #ECFDF5; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #10B981;">
+                                    <i class="ri-arrow-left-down-line"></i>
+                                </div>
+                                <div>
+                                    <div style="font-weight: 600;">Received from {{
+                                        t.sender_name|default:t.sender_phone_number }}</div>
+                                    <div class="text-muted text-sm">Credit</div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 1.25rem 1.5rem; font-family: monospace; color: var(--text-muted);">
+                            {{ t.transaction_id }}
+                        </td>
+                        <td style="padding: 1.25rem 1.5rem; text-align: right; font-weight: 700; font-size: 1.1rem;">
+                            {% if t.sender_phone_number == logged_in_phone %}
+                            <span style="color: var(--text-main);">- ₹{{ t.transaction_amount }}</span>
+                            {% else %}
+                            <span style="color: #10B981;">+ ₹{{ t.transaction_amount }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
-
-        <!-- Amount + Date -->
-        <div class="text-right">
-          <div class="{% if txn.sender_phone_number == logged_in_phone %}text-red-600{% else %}text-green-600{% endif %} font-semibold text-lg">
-            {% if txn.sender_phone_number == logged_in_phone %}-{% else %}+{% endif %}₹{{ txn.transaction_amount }}
-          </div>
-          <div class="text-sm text-gray-500">{{ txn.transaction_date|date:"M d, Y H:i" }}</div>
+        {% else %}
+        <div class="text-center py-12">
+            <div
+                style="width: 64px; height: 64px; background: var(--background); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: var(--text-muted); font-size: 1.5rem;">
+                <i class="ri-file-list-3-line"></i>
+            </div>
+            <h3>No transactions yet</h3>
+            <p class="text-muted">Start making payments to see them here.</p>
+            <a href="{% url 'transfer_money' %}" class="btn btn-primary mt-4">Make a Payment</a>
         </div>
-      </div>
-
-      <!-- 💳 Modal -->
-      <div id="modal-{{ txn.id }}" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 relative border border-gray-200 modal-enter">
-          <!-- Close -->
-          <button class="absolute top-3 right-3 text-gray-500 hover:text-red-500 text-2xl"
-                  onclick="closeModal('modal-{{ txn.id }}')">&times;</button>
-
-          <!-- Header -->
-          <div class="mb-5 border-b pb-3">
-            <h3 class="text-2xl font-semibold text-gray-800">Transaction Details</h3>
-            <p class="text-sm text-gray-500">Reference ID: <span class="font-mono">{{ txn.transaction_id }}</span></p>
-          </div>
-
-          <!-- Details -->
-          <div class="space-y-4">
-            <div class="grid grid-cols-2 gap-4">
-              <div class="bg-gray-50 rounded-lg p-3">
-                <p class="text-xs uppercase text-gray-500">Sender</p>
-                <p class="font-semibold">{{ txn.sender_name }}</p>
-                <p class="text-sm text-gray-600">{{ txn.sender_phone_number }}</p>
-              </div>
-              <div class="bg-gray-50 rounded-lg p-3">
-                <p class="text-xs uppercase text-gray-500">Receiver</p>
-                <p class="font-semibold">{{ txn.receiver_name }}</p>
-                <p class="text-sm text-gray-600">{{ txn.receiver_phone_number }}</p>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4">
-              <div class="bg-gray-50 rounded-lg p-3">
-                <p class="text-xs uppercase text-gray-500">Sender Bank</p>
-                <p class="font-semibold">{{ txn.sender_bank_name }}</p>
-                <p class="text-sm text-gray-600">{{ txn.sender_bank_account }}</p>
-              </div>
-              <div class="bg-gray-50 rounded-lg p-3">
-                <p class="text-xs uppercase text-gray-500">Receiver Bank</p>
-                <p class="font-semibold">{{ txn.receiver_bank_name }}</p>
-                <p class="text-sm text-gray-600">{{ txn.receiver_bank_account }}</p>
-              </div>
-            </div>
-
-            <div class="bg-gray-50 rounded-lg p-3">
-              <p class="text-xs uppercase text-gray-500">Amount</p>
-              <p class="text-2xl font-bold {% if txn.sender_phone_number == logged_in_phone %}text-red-600{% else %}text-green-600{% endif %}">
-                {% if txn.sender_phone_number == logged_in_phone %}-{% else %}+{% endif %}₹{{ txn.transaction_amount }}
-              </p>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4">
-              <div class="bg-gray-50 rounded-lg p-3">
-                <p class="text-xs uppercase text-gray-500">Date & Time</p>
-                <p class="text-sm">{{ txn.transaction_date|date:"M d, Y H:i" }}</p>
-              </div>
-              <div class="bg-gray-50 rounded-lg p-3">
-                <p class="text-xs uppercase text-gray-500">Transaction Type</p>
-                <p class="font-medium">{{ txn.transaction_type }}</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Pay Again (only if sender) -->
-          {% if txn.sender_phone_number == logged_in_phone %}
-          <div class="mt-6">
-            <a href="{% url 'transfer_money' %}?receiver={{ txn.receiver_phone_number }}&amount={{ txn.transaction_amount }}"
-               class="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold shadow-md transition">
-              💸 Pay Again
-            </a>
-          </div>
-          {% endif %}
-        </div>
-      </div>
-      {% endfor %}
+        {% endif %}
     </div>
-  </div>
+</div>
 
-  <!-- ⚡ JavaScript -->
-  <script>
-    function openModal(id) {
-      const modal = document.getElementById(id);
-      const content = modal.querySelector(".modal-enter");
-      modal.classList.remove("hidden");
-      setTimeout(() => content.classList.add("modal-active"), 10);
-    }
-    function closeModal(id) {
-      const modal = document.getElementById(id);
-      const content = modal.querySelector(".modal-enter");
-      content.classList.remove("modal-active");
-      setTimeout(() => modal.classList.add("hidden"), 200);
-    }
-    function filterTransactions() {
-      const input = document.getElementById("searchInput").value.toLowerCase();
-      const transactions = document.querySelectorAll(".transaction-card");
-      transactions.forEach(txn => {
-        const nameElem = txn.querySelector(".font-medium");
-        if (nameElem) {
-          const name = nameElem.textContent.toLowerCase();
-          txn.style.display = name.includes(input) ? "" : "none";
+<!-- Transaction Details Modal -->
+<div id="transactionModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content animate-slide-up">
+        <div class="flex justify-between items-center mb-6">
+            <h3>Transaction Details</h3>
+            <button onclick="closeModal()" class="btn-icon"><i class="ri-close-line"></i></button>
+        </div>
+
+        <div class="text-center mb-6">
+            <div class="text-muted text-sm mb-1">Amount</div>
+            <h1 id="modalAmount" class="text-3xl font-bold">₹0.00</h1>
+            <div id="modalStatus"
+                class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-700 text-sm font-medium mt-2">
+                <i class="ri-checkbox-circle-fill"></i> Successful
+            </div>
+        </div>
+
+        <div class="space-y-4">
+            <div class="flex justify-between border-b border-gray-100 pb-3">
+                <span class="text-muted">To/From</span>
+                <span id="modalName" class="font-medium">Name</span>
+            </div>
+            <div class="flex justify-between border-b border-gray-100 pb-3">
+                <span class="text-muted">Date</span>
+                <span id="modalDate" class="font-medium">Date</span>
+            </div>
+            <div class="flex justify-between border-b border-gray-100 pb-3">
+                <span class="text-muted">Transaction ID</span>
+                <span id="modalId" class="font-mono text-sm">ID</span>
+            </div>
+        </div>
+
+        <div class="mt-8 flex gap-3">
+            <button class="btn btn-outline flex-1"><i class="ri-share-forward-line"></i> Share</button>
+            <a id="payAgainBtn" href="#" class="btn btn-primary flex-1"><i class="ri-refresh-line"></i> Pay Again</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    function showTransactionDetails(id, date, amount, name, phone, isDebit) {
+        document.getElementById('modalId').textContent = id;
+        document.getElementById('modalDate').textContent = date;
+        document.getElementById('modalAmount').textContent = '₹' + amount;
+        document.getElementById('modalName').textContent = name;
+
+        const payAgainBtn = document.getElementById('payAgainBtn');
+        if (isDebit === 'True') {
+            payAgainBtn.href = "{% url 'transfer_money' %}?receiver=" + phone + "&amount=" + amount;
+            payAgainBtn.style.display = 'inline-flex';
+        } else {
+            payAgainBtn.style.display = 'none';
         }
-      });
+
+        document.getElementById('transactionModal').style.display = 'flex';
     }
-  </script>
-</body>
-</html>
+
+    function closeModal() {
+        document.getElementById('transactionModal').style.display = 'none';
+    }
+
+    // Close on outside click
+    window.onclick = function (event) {
+        const modal = document.getElementById('transactionModal');
+        if (event.target == modal) {
+            modal.style.display = 'none';
+        }
+    }
+</script>
+
+<style>
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+    }
+
+    .modal-content {
+        background: white;
+        width: 100%;
+        max-width: 400px;
+        padding: 2rem;
+        border-radius: 1.5rem;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+
+    .btn-icon {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: var(--text-muted);
+        padding: 0.5rem;
+        border-radius: 50%;
+        transition: all 0.2s;
+    }
+
+    .btn-icon:hover {
+        background: var(--background);
+        color: var(--text-main);
+    }
+</style>
+{% endblock %}

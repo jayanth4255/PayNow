@@ -19,4 +19,8 @@ urlpatterns = [
     path('upi-scan/', views.Scan_Pay.as_view(), name="upi-scan"),
     path('test-db/', views.test_db),
     path('load-data/', views.load_data),
+    path('recharge/', views.MobileRecharge.as_view(), name='mobile_recharge'),
+    path('electricity/', views.ElectricityBill.as_view(), name='electricity_bill'),
+    path('bus-booking/', views.BusBooking.as_view(), name='bus_booking'),
+    path('utility/', views.UtilityBill.as_view(), name='utility_bill'),
 ]

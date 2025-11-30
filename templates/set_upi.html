@@ -1,127 +1,41 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Set UPI PIN</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background-color: #f4f6f8;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
+{% extends 'base.html' %}
+{% load static %}
 
-        .container {
-            background-color: #fff;
-            padding: 30px 40px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 400px;
-        }
+{% block title %}Set UPI PIN - PayNow{% endblock %}
 
-        h2 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 25px;
-        }
-
-        label {
-            font-weight: 600;
-            display: block;
-            margin-bottom: 6px;
-            color: #333;
-        }
-
-        input[type="password"] {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 20px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 16px;
-            background-color: #f9f9f9;
-        }
-
-        button {
-            width: 100%;
-            padding: 12px;
-            background-color: #533bdc;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #218838;
-        }
-
-        .error {
-            color: red;
-            text-align: center;
-            margin-bottom: 15px;
-        }
-
-        .success {
-            color: green;
-            text-align: center;
-            margin-bottom: 15px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h2>Set UPI PIN</h2>
+{% block content %}
+<div class="container flex items-center justify-center" style="min-height: 80vh;">
+    <div class="card animate-fade-in" style="width: 100%; max-width: 400px;">
+        <div class="text-center mb-6">
+            <h2>Set UPI PIN</h2>
+            <p class="text-muted">Create a secure 6-digit PIN</p>
+        </div>
 
         {% if error %}
-            <div class="error">{{ error }}</div>
-        {% elif success %}
-            <div class="success">{{ success }}</div>
+        <div class="alert alert-error text-center">
+            {{ error }}
+        </div>
         {% endif %}
 
-        <form method="post" onsubmit="return validatePINs()">
+        <form method="POST" action="{% url 'set_upi' %}?email={{ request.GET.email }}">
             {% csrf_token %}
 
-            <label for="pin1">New UPI PIN</label>
-            <input type="password" id="pin1" name="pin1" placeholder="Enter 4 or 6 digit PIN" required>
+            <div class="form-group">
+                <label class="form-label">Enter New PIN</label>
+                <input type="password" name="pin1" class="form-control text-center" placeholder="• • • • • •"
+                    maxlength="6" style="font-size: 1.5rem; letter-spacing: 0.5rem;" required>
+            </div>
 
-            <label for="pin2">Confirm UPI PIN</label>
-            <input type="password" id="pin2" name="pin2" placeholder="Re-enter PIN" required>
+            <div class="form-group">
+                <label class="form-label">Confirm PIN</label>
+                <input type="password" name="pin2" class="form-control text-center" placeholder="• • • • • •"
+                    maxlength="6" style="font-size: 1.5rem; letter-spacing: 0.5rem;" required>
+            </div>
 
-            <div class="error" id="frontend-error" style="display: none;"></div>
-
-            <button type="submit">Set PIN</button>
+            <button type="submit" class="btn btn-primary btn-block mt-4">
+                Set PIN
+            </button>
         </form>
     </div>
-
-    <script>
-        function validatePINs() {
-            const pin1 = document.getElementById('pin1').value.trim();
-            const pin2 = document.getElementById('pin2').value.trim();
-            const errorDiv = document.getElementById('frontend-error');
-
-            // Check if both are numbers and 4 or 6 digits
-            const pinRegex = /^(\d{4}|\d{6})$/;
-
-            if (!pinRegex.test(pin1) || !pinRegex.test(pin2)) {
-                errorDiv.style.display = 'block';
-                errorDiv.textContent = "PIN must be either 4 or 6 digits.";
-                return false;
-            }
-
-            if (pin1 !== pin2) {
-                errorDiv.style.display = 'block';
-                errorDiv.textContent = "PINs do not match.";
-                return false;
-            }
-
-            errorDiv.style.display = 'none';
-            return true;
-        }
-    </script>
-</body>
-</html>
+</div>
+{% endblock %}

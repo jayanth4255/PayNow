@@ -1,173 +1,57 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Send Money</title>
-  <style>
-    body {
-      background: #f0f4f8;
-      font-family: 'Segoe UI', Tahoma, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-      color: #333;
-    }
+{% extends 'base.html' %}
+{% load static %}
 
-    .container {
-      width: 100%;
-      max-width: 500px;
-      padding: 30px;
-      background: #ffffff;
-      border-radius: 20px;
-      box-shadow: 0 15px 40px rgba(0,0,0,0.15);
-      animation: fadeIn 0.8s ease-in-out;
-    }
+{% block title %}Enter Amount - PayNow{% endblock %}
 
-    h2 {
-      text-align: center;
-      margin-bottom: 24px;
-      font-size: 28px;
-      font-weight: 700;
-      color: #0072ff;
-      position: relative;
-    }
+{% block content %}
+<div class="container flex items-center justify-center" style="min-height: 80vh;">
+    <div class="card animate-slide-up" style="width: 100%; max-width: 450px; padding: 0; overflow: hidden;">
 
-    h2::after {
-      content: "";
-      display: block;
-      width: 60px;
-      height: 3px;
-      background: #00c6ff;
-      margin: 8px auto 0;
-      border-radius: 2px;
-    }
+        <!-- Recipient Header -->
+        <div style="background: var(--primary-light); padding: 2rem; text-align: center;">
+            <div
+                style="width: 72px; height: 72px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: var(--primary); font-size: 2rem; font-weight: 700; box-shadow: var(--shadow-sm);">
+                {{ Receiver_name|slice:":1" }}
+            </div>
+            <h3 style="margin-bottom: 0.25rem;">{{ Receiver_name }}</h3>
+            <p class="text-muted text-sm flex items-center justify-center gap-1">
+                <i class="ri-shield-check-fill text-success"></i> {{ bank }} •• {{ account_last }}
+            </p>
+        </div>
 
-    label {
-      display: block;
-      margin-bottom: 6px;
-      font-size: 14px;
-      font-weight: 500;
-      color: #555;
-    }
+        <div style="padding: 2rem;">
+            {% if error %}
+            <div class="alert alert-error mb-6">
+                {{ error }}
+            </div>
+            {% endif %}
 
-    input[type="text"], input[type="number"] {
-      width: 100%;
-      padding: 14px;
-      margin-bottom: 18px;
-      border: 1px solid #ddd;
-      border-radius: 12px;
-      background: #f9f9f9;
-      color: #333;
-      font-size: 16px;
-      outline: none;
-      transition: all 0.3s ease;
-    }
+            <form method="POST" action="{% url 'receive_page' %}">
+                {% csrf_token %}
 
-    input[type="text"]:focus, input[type="number"]:focus {
-      border-color: #0072ff;
-      box-shadow: 0 0 10px rgba(0, 114, 255, 0.2);
-      background: #fff;
-    }
+                <div class="form-group text-center">
+                    <label class="form-label text-muted">Enter Amount</label>
+                    <div style="position: relative; display: inline-block;">
+                        <span
+                            style="position: absolute; left: -1.5rem; top: 50%; transform: translateY(-50%); color: var(--text-main); font-size: 2rem; font-weight: 600;">₹</span>
+                        <input type="number" name="amount" class="form-control" placeholder="0"
+                            value="{{ prefill_amount }}"
+                            style="border: none; border-bottom: 2px solid var(--border); border-radius: 0; padding: 0.5rem; font-size: 3rem; font-weight: 700; text-align: center; width: 200px; background: transparent; box-shadow: none;"
+                            required autofocus>
+                    </div>
+                </div>
 
-    button {
-      width: 100%;
-      padding: 14px;
-      margin-top: 8px;
-      border: none;
-      border-radius: 12px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      background: linear-gradient(90deg, #00c6ff, #0072ff);
-      color: #fff;
-      transition: all 0.3s ease;
-      box-shadow: 0 5px 15px rgba(0,114,255,0.3);
-    }
+                <div class="form-group mt-4">
+                    <input type="text" class="form-control text-center" placeholder="Add a note (Optional)"
+                        style="border: none; background: var(--background); font-size: 0.9rem;">
+                </div>
 
-    button:hover {
-      transform: scale(1.03);
-      box-shadow: 0 8px 25px rgba(0,114,255,0.4);
-    }
+                <button type="submit" class="btn btn-primary btn-block btn-lg mt-6">
+                    Pay Securely <i class="ri-lock-2-fill"></i>
+                </button>
+            </form>
+        </div>
 
-    /* ✅ Professional Error Box */
-    .error-box {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: #ffe5e5;
-      border: 1px solid #ff4d4d;
-      color: #ff1a1a;
-      padding: 14px 16px;
-      border-radius: 12px;
-      font-size: 15px;
-      font-weight: 500;
-      margin-bottom: 18px;
-      animation: shake 0.3s ease;
-    }
-
-    .error-icon {
-      font-size: 18px;
-    }
-
-    @keyframes fadeIn {
-      from {opacity: 0; transform: translateY(20px);}
-      to {opacity: 1; transform: translateY(0);}
-    }
-
-    @keyframes shake {
-      0% { transform: translateX(0); }
-      25% { transform: translateX(-4px); }
-      50% { transform: translateX(4px); }
-      75% { transform: translateX(-4px); }
-      100% { transform: translateX(0); }
-    }
-
-    /* Smooth input fade-in */
-    input, button {
-      animation: fadeIn 0.6s ease-in-out;
-    }
-  </style>
-</head>
-<body>
-  <a href="javascript:history.back()" style="position: absolute; left: 32px; top: 32px; text-decoration: none; color: #0072ff; font-size: 18px; font-weight: 600; background: #eaf6ff; padding: 8px 16px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,114,255,0.08); transition: background 0.2s;">
-    ← Back
-  </a>
-
-  <div class="container">
-    <h2>💸 Send Money</h2>
-
-    {% if error %}
-      <div class="error-box">
-        <span class="error-icon">⚠️</span>
-        <span class="error-text">{{ error }}</span>
-      </div>
-    {% endif %}
-
-    <form method="POST" action="{% url 'receive_page' %}">
-      {% csrf_token %}
-
-      <!-- Receiver Name -->
-      <label>Receiver Name</label>
-      <input type="text" name="receiver_name" value="{{ Receiver_name }}" readonly />
-
-      <!-- Last 4 Digits -->
-      <label>Account Number (Last 4 digits)</label>
-      <input type="text" name="account_last4" value="{{ account_last }}" readonly />
-
-      <!-- Bank Name -->
-      <label>Bank Name</label>
-      <input type="text" name="bank_name" value="{{ bank }}" readonly />
-
-      <!-- Amount -->
-      <label>Amount (₹)</label>
-      <input type="number" name="amount" min="1" required placeholder="Enter amount" />
-
-      <!-- Submit -->
-      <button type="submit">Send Money</button>
-    </form>
-  </div>
-
-</body>
-</html>
+    </div>
+</div>
+{% endblock %}
