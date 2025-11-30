@@ -225,8 +225,8 @@
                         </div>
                         <div
                             class="transaction-amount {% if t.sender_phone_number == logged_in_phone %}sent{% else %}received{% endif %}">
-                            {% if t.sender_phone_number == logged_in_phone %}- {% else %}+ {% endif %}₹{{
-                            t.transaction_amount }}
+                            {% if t.sender_phone_number == logged_in_phone %}- ₹{{ t.transaction_amount }}{% else %}+
+                            ₹{{ t.transaction_amount }}{% endif %}
                         </div>
                     </div>
                     {% endfor %}
@@ -244,7 +244,7 @@
 </div>
 
 <script>
-    let balanceVisible = false;
+    let balanceVisible = true; // Changed to true to show balance by default
     const actualBalance = "{{ balance }}";
 
     function toggleBalance() {
@@ -255,12 +255,18 @@
 
         if (balanceVisible) {
             balanceValue.textContent = parseFloat(actualBalance).toFixed(2);
-            eyeIcon.className = 'ri-eye-off-line';
+            eyeIcon.className = 'ri-eye-off-line'; // Icon should be 'eye-off' when balance is visible
         } else {
             balanceValue.textContent = '****.**';
-            eyeIcon.className = 'ri-eye-line';
+            eyeIcon.className = 'ri-eye-line'; // Icon should be 'eye' when balance is hidden
         }
     }
+
+    // Set initial balance display
+    document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('balanceValue').textContent = parseFloat(actualBalance).toFixed(2);
+        document.getElementById('eyeIcon').className = 'ri-eye-off-line'; // Set initial icon to 'eye-off'
+    });
 
     function copyUPI() {
         const upiText = document.getElementById('upiText').textContent;

@@ -52,8 +52,7 @@
                                     <i class="ri-arrow-right-up-line"></i>
                                 </div>
                                 <div>
-                                    <div style="font-weight: 600;">Paid to {{
-                                        t.receiver_name|default:t.receiver_phone_number }}</div>
+                                    <div style="font-weight: 600;">Paid to {{ t.receiver_name }}</div>
                                     <div class="text-muted text-sm">Transfer</div>
                                 </div>
                             </div>
@@ -64,8 +63,7 @@
                                     <i class="ri-arrow-left-down-line"></i>
                                 </div>
                                 <div>
-                                    <div style="font-weight: 600;">Received from {{
-                                        t.sender_name|default:t.sender_phone_number }}</div>
+                                    <div style="font-weight: 600;">Received from {{ t.sender_name }}</div>
                                     <div class="text-muted text-sm">Credit</div>
                                 </div>
                             </div>
@@ -132,15 +130,40 @@
             </div>
         </div>
 
-        <div class="mt-8 flex gap-3">
-            <button class="btn btn-outline flex-1"><i class="ri-share-forward-line"></i> Share</button>
-            <a id="payAgainBtn" href="#" class="btn btn-primary flex-1"><i class="ri-refresh-line"></i> Pay Again</a>
+        <div class="mt-8">
+            <!-- Primary Actions -->
+            <div class="flex gap-3 mb-3">
+                <a id="payAgainBtn" href="#" class="btn btn-primary flex-1">
+                    <i class="ri-refresh-line"></i> Pay Again
+                </a>
+                <button onclick="downloadReceipt()" class="btn btn-outline flex-1">
+                    <i class="ri-download-line"></i> Download
+                </button>
+            </div>
+
+            <!-- Secondary Actions -->
+            <div class="flex gap-3">
+                <button onclick="shareTransaction()" class="btn btn-outline flex-1">
+                    <i class="ri-share-forward-line"></i> Share
+                </button>
+                <a href="{% url 'transaction_history' %}" class="btn btn-outline flex-1">
+                    <i class="ri-history-line"></i> History
+                </a>
+                <button onclick="reportIssue()" class="btn btn-outline flex-1">
+                    <i class="ri-error-warning-line"></i> Report
+                </button>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
+    let currentTransactionData = {};
+
     function showTransactionDetails(id, date, amount, name, phone, isDebit) {
+        // Store current transaction data
+        currentTransactionData = { id, date, amount, name, phone, isDebit };
+
         document.getElementById('modalId').textContent = id;
         document.getElementById('modalDate').textContent = date;
         document.getElementById('modalAmount').textContent = '₹' + amount;
@@ -159,6 +182,36 @@
 
     function closeModal() {
         document.getElementById('transactionModal').style.display = 'none';
+    }
+
+    function downloadReceipt() {
+        const { id, date, amount, name } = currentTransactionData;
+        alert(`Downloading receipt for Transaction ID: ${id}\nAmount: ₹${amount}\nDate: ${date}\n\nThis feature will be available soon!`);
+    }
+
+    function shareTransaction() {
+        const { id, amount, name } = currentTransactionData;
+        const shareText = `Payment of ₹${amount} to ${name}\nTransaction ID: ${id}`;
+
+        if (navigator.share) {
+            navigator.share({
+                title: 'Transaction Details',
+                text: shareText
+            }).catch(err => console.log('Error sharing:', err));
+        } else {
+            // Fallback: Copy to clipboard
+            navigator.clipboard.writeText(shareText).then(() => {
+                alert('Transaction details copied to clipboard!');
+            });
+        }
+    }
+
+    function reportIssue() {
+        const { id } = currentTransactionData;
+        const confirmed = confirm(`Report an issue with Transaction ID: ${id}?\n\nYou will be redirected to customer support.`);
+        if (confirmed) {
+            alert('Customer support feature coming soon!\nFor now, please contact: support@paynow.com');
+        }
     }
 
     // Close on outside click
