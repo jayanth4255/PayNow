@@ -6,7 +6,7 @@
 {% block content %}
 <div class="futuristic-bg"></div>
 
-<div class="container py-8">
+<div class="dashboard-container py-8">
     <!-- Header with Greeting -->
     <div class="dashboard-header animate-slide-up">
         <div>
@@ -14,12 +14,12 @@
             <p class="text-muted">Welcome to your financial command center</p>
         </div>
         <div class="profile-quick-actions">
-            <button class="icon-btn" onclick="window.location.href='{% url 'transaction_history' %}'">
+            <a href="{% url 'transaction_history' %}" class="icon-btn">
                 <i class="ri-history-line"></i>
-            </button>
-            <button class="icon-btn" onclick="window.location.href='{% url 'logout' %}'">
+            </a>
+            <a href="{% url 'logout' %}" class="icon-btn">
                 <i class="ri-logout-box-line"></i>
-            </button>
+            </a>
         </div>
     </div>
 
@@ -106,9 +106,9 @@
                             <i class="ri-bank-card-fill"></i>
                             {{ bank_name }}
                         </div>
-                        <button class="qr-btn" onclick="window.location.href='{% url 'upi-scan' %}'">
+                        <a href="{% url 'upi-scan' %}" class="qr-btn">
                             <i class="ri-qr-code-line"></i>
-                        </button>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -271,6 +271,11 @@
 </script>
 
 <style>
+    /* Base Styles */
+    * {
+        box-sizing: border-box;
+    }
+
     /* Futuristic Background */
     .futuristic-bg {
         position: fixed;
@@ -304,6 +309,14 @@
         50% {
             transform: translate(-50px, -50px);
         }
+    }
+
+    /* Container */
+    .dashboard-container {
+        max-width: 1400px !important;
+        margin: 0 auto !important;
+        padding: 0 2rem !important;
+        width: 100% !important;
     }
 
     /* Dashboard Header */
@@ -342,6 +355,7 @@
         color: var(--text-main);
         cursor: pointer;
         transition: all 0.3s;
+        text-decoration: none;
     }
 
     .icon-btn:hover {
@@ -356,6 +370,13 @@
         display: grid;
         grid-template-columns: 400px 1fr;
         gap: 2rem;
+    }
+
+    .left-column,
+    .right-column {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
     }
 
     /* Glass Card Effect */
@@ -375,10 +396,6 @@
     }
 
     /* Profile Card */
-    .profile-card {
-        margin-bottom: 1.5rem;
-    }
-
     .profile-header {
         display: flex;
         gap: 1.5rem;
@@ -467,6 +484,7 @@
         justify-content: center;
         font-size: 1.25rem;
         color: var(--primary);
+        flex-shrink: 0;
     }
 
     .detail-item .label {
@@ -501,6 +519,7 @@
         font-family: monospace;
         font-weight: 600;
         color: var(--primary);
+        word-break: break-all;
     }
 
     .copy-btn {
@@ -514,6 +533,7 @@
         justify-content: center;
         cursor: pointer;
         transition: all 0.2s;
+        flex-shrink: 0;
     }
 
     .copy-btn:hover {
@@ -616,6 +636,7 @@
         font-size: 1.25rem;
         cursor: pointer;
         transition: all 0.2s;
+        text-decoration: none;
     }
 
     .qr-btn:hover {
@@ -627,7 +648,6 @@
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         gap: 1rem;
-        margin-bottom: 1.5rem;
     }
 
     .stat-card {
@@ -676,6 +696,7 @@
     .stat-content {
         display: flex;
         flex-direction: column;
+        min-width: 0;
     }
 
     .stat-label {
@@ -689,6 +710,7 @@
         font-weight: 700;
         color: var(--text-main);
         margin-bottom: 0.125rem;
+        word-break: break-word;
     }
 
     .stat-sub {
@@ -697,10 +719,6 @@
     }
 
     /* Action Section */
-    .action-section {
-        margin-bottom: 1.5rem;
-    }
-
     .section-title {
         font-size: 1.125rem;
         font-weight: 600;
@@ -832,11 +850,15 @@
         flex: 1;
         display: flex;
         flex-direction: column;
+        min-width: 0;
     }
 
     .transaction-name {
         font-weight: 600;
         color: var(--text-main);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .transaction-date {
@@ -847,6 +869,7 @@
     .transaction-amount {
         font-weight: 700;
         font-size: 1.125rem;
+        flex-shrink: 0;
     }
 
     .transaction-amount.sent {
@@ -869,18 +892,62 @@
         opacity: 0.5;
     }
 
-    /* Responsive */
+    /* Responsive Design */
+    @media (max-width: 1200px) {
+        .dashboard-grid {
+            grid-template-columns: 350px 1fr;
+        }
+    }
+
     @media (max-width: 1024px) {
         .dashboard-grid {
             grid-template-columns: 1fr;
         }
 
+        .profile-card,
+        .wallet-card {
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-container {
+            padding: 0 1rem !important;
+        }
+
+        .dashboard-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .profile-quick-actions {
+            width: 100%;
+            justify-content: flex-end;
+        }
+
+        .greeting {
+            font-size: 1.75rem;
+        }
+
         .stats-grid {
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: 1fr;
         }
 
         .action-grid {
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .glass-card {
+            padding: 1.5rem;
+        }
+
+        .profile-header {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
         }
     }
 
@@ -889,16 +956,94 @@
             font-size: 1.5rem;
         }
 
-        .stats-grid {
-            grid-template-columns: 1fr;
+        .balance-amount {
+            font-size: 2.5rem;
         }
 
-        .action-grid {
-            grid-template-columns: repeat(2, 1fr);
+        .currency {
+            font-size: 1.5rem;
+        }
+
+        .action-btn {
+            padding: 0.75rem;
+        }
+
+        .action-icon {
+            width: 48px;
+            height: 48px;
+            font-size: 1.25rem;
+        }
+
+        .action-btn span {
+            font-size: 0.8rem;
+        }
+
+        .stat-value {
+            font-size: 1.25rem;
+        }
+
+        .transaction-amount {
+            font-size: 1rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .dashboard-container {
+            padding: 0 0.75rem !important;
+        }
+
+        .greeting {
+            font-size: 1.25rem;
+        }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            font-size: 1.125rem;
+        }
+
+        .glass-card {
+            padding: 1.25rem;
+            border-radius: 16px;
         }
 
         .balance-amount {
-            font-size: 2.5rem;
+            font-size: 2rem;
+        }
+
+        .avatar-large {
+            width: 70px;
+            height: 70px;
+            font-size: 1.75rem;
+        }
+
+        .detail-item i {
+            width: 36px;
+            height: 36px;
+            font-size: 1.125rem;
+        }
+
+        .section-title {
+            font-size: 1rem;
+        }
+    }
+
+    @media (max-width: 360px) {
+        .greeting {
+            font-size: 1.125rem;
+        }
+
+        .balance-amount {
+            font-size: 1.75rem;
+        }
+
+        .stat-card {
+            padding: 1rem;
+        }
+
+        .action-icon {
+            width: 44px;
+            height: 44px;
         }
     }
 </style>

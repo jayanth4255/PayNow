@@ -172,6 +172,15 @@
         background: #00f2fe;
     }
 
+    /* Utility classes */
+    .relative {
+        position: relative;
+    }
+
+    .z-10 {
+        z-index: 10;
+    }
+
     .hero-title {
         font-size: 3.5rem;
         font-weight: 800;
@@ -186,12 +195,21 @@
         border: none;
     }
 
+    .btn-white:hover {
+        background: #f0f0f0;
+        transform: scale(1.05);
+    }
+
     .btn-glass {
         background: rgba(255, 255, 255, 0.1);
         backdrop-filter: blur(10px);
         border: 1px solid rgba(255, 255, 255, 0.2);
         color: white;
         font-weight: 600;
+    }
+
+    .btn-glass:hover {
+        background: rgba(255, 255, 255, 0.2);
     }
 
     .feature-card {
@@ -219,13 +237,192 @@
         margin-bottom: 1.5rem;
     }
 
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+        .hero-title {
+            font-size: 3rem;
+        }
+
+        .hero-section {
+            padding: 6rem 0 5rem;
+        }
+    }
+
     @media (max-width: 768px) {
         .hero-title {
             font-size: 2.5rem;
         }
 
         .hero-section {
-            padding: 6rem 0 4rem;
+            padding: 5rem 0 4rem;
+        }
+
+        .text-lg {
+            font-size: 1rem !important;
+        }
+
+        .max-w-xl,
+        .max-w-2xl {
+            max-width: 100% !important;
+            padding: 0 1rem;
+        }
+
+        .btn-lg {
+            padding: 0.875rem 1.5rem !important;
+            font-size: 1rem !important;
+        }
+
+        .gap-4 {
+            gap: 0.75rem !important;
+        }
+
+        .py-20 {
+            padding-top: 3rem !important;
+            padding-bottom: 3rem !important;
+        }
+
+        .mb-12 {
+            margin-bottom: 2rem !important;
+        }
+
+        .text-3xl {
+            font-size: 1.875rem !important;
+        }
+
+        .gap-8 {
+            gap: 1.5rem !important;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .hero-title {
+            font-size: 2rem;
+        }
+
+        .hero-section {
+            padding: 4rem 0 3rem;
+        }
+
+        .text-lg {
+            font-size: 0.9375rem !important;
+        }
+
+        .btn-lg {
+            padding: 0.75rem 1.25rem !important;
+            font-size: 0.9375rem !important;
+            width: 100%;
+        }
+
+        .flex-wrap {
+            flex-direction: column;
+        }
+
+        .gap-4 {
+            gap: 0.5rem !important;
+        }
+
+        .mb-6 {
+            margin-bottom: 1rem !important;
+        }
+
+        .mb-8 {
+            margin-bottom: 1.5rem !important;
+        }
+
+        .py-20 {
+            padding-top: 2.5rem !important;
+            padding-bottom: 2.5rem !important;
+        }
+
+        .py-12 {
+            padding-top: 2rem !important;
+            padding-bottom: 2rem !important;
+        }
+
+        .text-3xl {
+            font-size: 1.5rem !important;
+        }
+
+        .text-xl {
+            font-size: 1.125rem !important;
+        }
+
+        .feature-card {
+            padding: 1.5rem;
+        }
+
+        .icon-wrapper {
+            width: 56px;
+            height: 56px;
+        }
+
+        .gap-8 {
+            gap: 1rem !important;
+        }
+
+        .md\:gap-16 {
+            gap: 1rem !important;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .hero-title {
+            font-size: 1.75rem;
+        }
+
+        .hero-section {
+            padding: 3rem 0 2.5rem;
+        }
+
+        .text-lg {
+            font-size: 0.875rem !important;
+        }
+
+        .btn-lg {
+            padding: 0.625rem 1rem !important;
+            font-size: 0.875rem !important;
+        }
+
+        .text-3xl {
+            font-size: 1.375rem !important;
+        }
+
+        .text-xl {
+            font-size: 1rem !important;
+        }
+
+        .feature-card {
+            padding: 1.25rem;
+        }
+
+        .icon-wrapper {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 1rem;
+        }
+
+        .text-sm {
+            font-size: 0.8125rem !important;
+        }
+
+        .px-4 {
+            padding-left: 0.75rem !important;
+            padding-right: 0.75rem !important;
+        }
+    }
+
+    @media (max-width: 360px) {
+        .hero-title {
+            font-size: 1.5rem;
+        }
+
+        .text-lg {
+            font-size: 0.8125rem !important;
+        }
+
+        .btn-lg {
+            padding: 0.5rem 0.875rem !important;
+            font-size: 0.8125rem !important;
         }
     }
 </style>
