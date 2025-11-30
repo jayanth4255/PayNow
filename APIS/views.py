@@ -99,6 +99,13 @@ def logout_view(request):
 
 
 # --------------------------
+# Success View
+# --------------------------
+def success(request):
+    return render(request, 'success.html')
+
+
+# --------------------------
 # Scan & Pay API
 # --------------------------
 class Scan_Pay(APIView):
