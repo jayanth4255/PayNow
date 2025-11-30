@@ -1,5 +1,3 @@
-# All print statements removed
-
 from django.shortcuts import render, redirect, get_object_or_404
 from rest_framework.views import APIView
 from django.utils import timezone
@@ -9,7 +7,6 @@ from django.urls import reverse
 from django.contrib.auth import logout
 import uuid
 import pytz
-from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q
 from django.contrib.auth.models import User
@@ -23,34 +20,41 @@ from .serializers import (
     BalanceEnquarySerializer,
     Transactions
 )
-
-SESSION_TIMEOUT_MINUTES = 1
-
 from django.http import JsonResponse
 import json
 
-class Scan_Pay(APIView):
-    def get(self,request):
-        return render(request,'scan_pay.html')
-    def post(self,request):
-        data = json.loads(request.body)
-        pa = data.get("pa")
-        pn = data.get("pn")
-        am = data.get("am")
-        tn = data.get("tn")
-        
-        # TODO: Validate or simulate payment
-        
-        return JsonResponse({"status": "success", "message": "UPI QR processed"})
+SESSION_TIMEOUT_MINUTES = 1
 
+
+# --------------------------
+# Home / Index View
+# --------------------------
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+def index(request):
+    reward_message = request.session.pop('reward_message', None)
+    username = "User"  # default
+
+    phone = request.session.get('login_phone')
+    if phone:
+        try:
+            user = BankUser.objects.get(phone=phone)
+            username = user.registered_name or "User"
+        except BankUser.DoesNotExist:
+            request.session.pop('login_phone', None)
+            phone = None
+
+    context = {
+        'username': username,
+        'reward_message': reward_message
+    }
+    return render(request, 'index.html', context)
+
+
+# --------------------------
+# Profile View
+# --------------------------
 def profile_view(request):
     phone = request.session.get('login_phone')
-    upi_id = BankUser.objects.get(phone=phone).registered_name
-    user_upi_id = (
-        upi_id
-        + str(BankUser.objects.get(phone=phone).bank_account_num[-4:])
-        + '@PayNow'
-    )
     if not phone:
         return redirect('login')
 
@@ -60,7 +64,6 @@ def profile_view(request):
         return redirect('login')
 
     username = f"user_{phone}"
-
     try:
         auth_user = User.objects.get(username=username)
         user_email = auth_user.email
@@ -69,6 +72,8 @@ def profile_view(request):
 
     first_letter = bank_user.registered_name[0].upper() if bank_user.registered_name else 'U'
     profile_image_url = "/static/images/default_user.png"
+
+    user_upi_id = f"{bank_user.registered_name}{bank_user.bank_account_num[-4:]}@PayNow"
 
     context = {
         'name': bank_user.registered_name,
@@ -80,39 +85,39 @@ def profile_view(request):
         'initial': first_letter,
         'upi_id': user_upi_id,
     }
-
     return render(request, 'profile.html', context)
 
 
+# --------------------------
+# Logout View
+# --------------------------
 def logout_view(request):
     logout(request)
     for key in ['login_phone', 'phone', 'pin', 'signin_phone']:
         request.session.pop(key, None)
     return redirect('index')
 
-@cache_control(no_cache=True, must_revalidate=True, no_store=True)
-def index(request):
-    reward_message = request.session.pop('reward_message', None)
 
-    username = None
-    if request.session.get('login_phone'):
-        try:
-            user = BankUser.objects.get(phone=request.session['login_phone'])
-            username = user.registered_name
-        except BankUser.DoesNotExist:
-            pass
+# --------------------------
+# Scan & Pay API
+# --------------------------
+class Scan_Pay(APIView):
+    def get(self, request):
+        return render(request, 'scan_pay.html')
 
-    return render(request, 'index.html', {
-        'username': username,
-        'reward_message': reward_message
-    })
-
-def success(request):
-    return render(request, 'success.html')
+    def post(self, request):
+        data = json.loads(request.body)
+        pa = data.get("pa")
+        pn = data.get("pn")
+        am = data.get("am")
+        tn = data.get("tn")
+        # TODO: Validate or simulate payment
+        return JsonResponse({"status": "success", "message": "UPI QR processed"})
 
 
-
-
+# --------------------------
+# Login View
+# --------------------------
 @method_decorator(cache_control(no_cache=True, must_revalidate=True, no_store=True), name='dispatch')
 class LoginView(APIView):
     def get(self, request):
@@ -132,7 +137,6 @@ class LoginView(APIView):
                 if not profile.first_login_reward_claimed:
                     user.balance += 50
                     user.save()
-
                     profile.first_login_reward_claimed = True
                     profile.save()
 
@@ -150,74 +154,43 @@ class LoginView(APIView):
                     request.session['reward_message'] = "🎉 You earned ₹50 reward for your first login!"
 
                 return redirect('index')
-
             except BankUser.DoesNotExist:
                 return render(request, 'login.html', {'error': 'User does not exist'})
-
         return render(request, 'login.html', {'error': 'Invalid phone or password'})
 
+
+# --------------------------
+# Transfer Money View
+# --------------------------
 @method_decorator(cache_control(no_cache=True, must_revalidate=True, no_store=True), name='dispatch')
 class TransferMoney(APIView):
     def get(self, request):
-        if not request.session.get('login_phone'):
+        phone = request.session.get('login_phone')
+        if not phone:
             return redirect('login')
 
         receiver = request.GET.get('receiver')
         amount = request.GET.get('amount')
 
+        context = {}
         if receiver:
             try:
                 user = BankUser.objects.get(phone=receiver)
                 masked_account = 'X' * (len(user.bank_account_num) - 4) + user.bank_account_num[-4:]
-
                 context = {
                     'Receiver_name': user.registered_name,
                     'account_last': masked_account,
                     'bank': user.bank_name,
-                    'prefill_amount': amount or '',
+                    'prefill_amount': amount or ''
                 }
-
                 request.session['receiver_phone_number'] = receiver
                 request.session['payment_start_time'] = timezone.now().isoformat()
                 request.session['context'] = context
-
                 return render(request, 'receiver_page.html', context)
-
             except BankUser.DoesNotExist:
-                return render(request, 'transfer_money.html', {
-                    'error': 'Phone number not found.'
-                })
+                return render(request, 'transfer_money.html', {'error': 'Phone number not found.'})
 
-        upi_id = request.session.get("upi_id")
-        payee_name = request.session.get("payee_name")
-        qr_amount = request.session.get("amount")
-        note = request.session.get("note")
-
-        if upi_id:
-            try:
-                user = BankUser.objects.get(upi_id=upi_id)
-                masked_account = 'X' * (len(user.bank_account_num) - 4) + user.bank_account_num[-4:]
-
-                context = {
-                    'Receiver_name': payee_name or user.registered_name,
-                    'account_last': masked_account,
-                    'bank': user.bank_name,
-                    'prefill_amount': qr_amount or '',
-                    'note': note or '',
-                }
-
-                request.session['receiver_upi_id'] = upi_id
-                request.session['payment_start_time'] = timezone.now().isoformat()
-                request.session['context'] = context
-
-                return render(request, "receiver_page.html", context)
-
-            except BankUser.DoesNotExist:
-                return render(request, "transfer_money.html", {
-                    "error": "No bank account found for this UPI ID."
-                })
-
-        return render(request, "transfer_money.html")
+        return render(request, 'transfer_money.html')
 
     def post(self, request):
         receiver_phone_number = request.POST.get('receiver_phone_number')
@@ -238,23 +211,24 @@ class TransferMoney(APIView):
         try:
             user = BankUser.objects.get(phone=receiver_phone_number)
             masked_account = 'X' * (len(user.bank_account_num) - 4) + user.bank_account_num[-4:]
-
             context = {
                 'Receiver_name': user.registered_name,
                 'account_last': masked_account,
                 'bank': user.bank_name,
                 'show_fav_button': True
             }
-
             request.session['context'] = context
             return render(request, 'receiver_page.html', context)
-
         except BankUser.DoesNotExist:
             return render(request, 'transfer_money.html', {
                 'error': 'Phone number not found.',
                 'show_fav_button': False
             })
 
+
+# --------------------------
+# Receiver View
+# --------------------------
 @method_decorator(cache_control(no_cache=True, must_revalidate=True, no_store=True), name='dispatch')
 class Receiver(APIView):
     def post(self, request):
@@ -282,6 +256,9 @@ class Receiver(APIView):
         return render(request, 'receiver_page.html')
 
 
+# --------------------------
+# Verify PIN View
+# --------------------------
 @method_decorator(cache_control(no_cache=True, must_revalidate=True, no_store=True), name='dispatch')
 class VerifyPin(APIView):
     def get(self, request):
@@ -291,75 +268,64 @@ class VerifyPin(APIView):
 
     def post(self, request):
         sender_phone_number = request.session.get('login_phone')
-        pin = userprofile.objects.get(phone=sender_phone_number).pin
         amount = request.session.get('amount')
         receiver_phone_number = request.session.get('receiver_phone_number')
         entered_pin = request.POST.get('pin')
 
-        sender = BankUser.objects.get(phone=sender_phone_number)
-        receiver = BankUser.objects.get(phone=receiver_phone_number)
+        if not sender_phone_number or not amount or not receiver_phone_number:
+            return render(request, 'enter_pin.html', {'error': 'Session expired. Please try again.'})
 
+        try:
+            sender = BankUser.objects.get(phone=sender_phone_number)
+            receiver = BankUser.objects.get(phone=receiver_phone_number)
+            pin = userprofile.objects.get(phone=sender_phone_number).pin
+        except (BankUser.DoesNotExist, userprofile.DoesNotExist):
+            return redirect('login')
+
+        # Build transaction
         sender_account_number = sender.bank_account_num
         receiver_account_number = receiver.bank_account_num
-        sender_bank_name = sender.bank_name
-        sender_upi_id = sender.registered_name + str(sender.bank_account_num[-4:]) + '@PayNow'
-        receiver_bank_name = receiver.bank_name
-        sender_name = sender.registered_name
-        receiver_upi_id = receiver.registered_name + str(receiver.bank_account_num[-4:]) + '@PayNow'
-        receiver_name = receiver.registered_name
+        sender_upi_id = f"{sender.registered_name}{sender.bank_account_num[-4:]}@PayNow"
+        receiver_upi_id = f"{receiver.registered_name}{receiver.bank_account_num[-4:]}@PayNow"
         transaction_id = str(uuid.uuid4()).replace("-", "").upper()[:12]
 
-        # ✅ Keep transaction_date as datetime (IST)
         ist = pytz.timezone("Asia/Kolkata")
         transaction_date = timezone.now().astimezone(ist)
 
-        # Store details in session
-        request.session['sender_account_number'] = sender_account_number
-        request.session['receiver_account_number'] = receiver_account_number
-        request.session['sender_bank_name'] = sender_bank_name
-        request.session['receiver_bank_name'] = receiver_bank_name
-        request.session['sender_name'] = sender_name
-        request.session['receiver_name'] = receiver_name
-        request.session['sender_phone_number'] = sender_phone_number
-        request.session['sending_amount'] = amount
-        request.session['receiver_phone_number'] = receiver_phone_number
-        request.session['receiver_upi_id'] = receiver_upi_id
-        request.session['sender_upi_id'] = sender_upi_id
-
-        # Session timeout check
+        # Session timeout
         start_time_str = request.session.get('payment_start_time')
         if start_time_str:
-            start_time = timezone.datetime.fromisoformat(start_time_str)
-            now = timezone.now()
-            if (now - start_time).total_seconds() > SESSION_TIMEOUT_MINUTES * 60:
-                return render(request, 'index.html', {'error': 'Session expired. Please try again.'})
+            try:
+                start_time = timezone.datetime.fromisoformat(start_time_str)
+                if (timezone.now() - start_time).total_seconds() > SESSION_TIMEOUT_MINUTES * 60:
+                    return render(request, 'index.html', {'error': 'Session expired. Please try again.'})
+            except ValueError:
+                pass
 
-        # ✅ Pass datetime object (not string) into serializer
         serializer = VarifyPinSerializer(data={
             'transaction_id': transaction_id,
             'transaction_date': transaction_date,
-            'sender_name': sender_name,
+            'sender_name': sender.registered_name,
             'sender_phone_number': sender_phone_number,
-            'sender_bank_name': sender_bank_name,
+            'sender_bank_name': sender.bank_name,
             'sender_bank_account': sender_account_number,
             'sender_upi_id': sender_upi_id,
             'transaction_amount': amount,
             'receiver_upi_id': receiver_upi_id,
-            'receiver_name': receiver_name,
+            'receiver_name': receiver.registered_name,
             'receiver_phone_number': receiver_phone_number,
             'receiver_bank_account': receiver_account_number,
-            'receiver_bank_name': receiver_bank_name,
+            'receiver_bank_name': receiver.bank_name,
             'pin': pin,
             'entered_pin': entered_pin,
         })
 
         if serializer.is_valid():
-            # ✅ Pass datetime to template
             return render(request, 'success.html', {
                 'amount': amount,
                 'receiver_phone_number': receiver_phone_number,
                 'reference_id': transaction_id,
-                'timestamp': transaction_date,  # datetime, not string
+                'timestamp': transaction_date,
             })
 
         return render(request, 'enter_pin.html', {'error': 'Invalid PIN'})
@@ -435,6 +401,18 @@ class set_upi(APIView):
         return render(request, 'set_upi.html', {
             'error': error_message,
         })
+from django.http import HttpResponse
+from django.db import connection
+
+def test_db(request):
+    try:
+        # Tries to connect to the database
+        connection.ensure_connection()
+        cursor = connection.cursor()
+        cursor.execute("SELECT 1")  # simple query to check DB
+        return HttpResponse("✅ Database is connected!")
+    except Exception as e:
+        return HttpResponse(f"❌ Database connection error: {e}")
 
 
 class ChangeUpiPin(APIView):

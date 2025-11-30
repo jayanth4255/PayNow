@@ -16,5 +16,6 @@ urlpatterns = [
     path("profile/", views.profile_view, name="profile"),
     path('transaction_history/', views.transaction_history, name='transaction_history'),
     path('balance/',views.balance_enquary.as_view(),name='balance'),
-    path('upi-scan/', views.Scan_Pay.as_view(), name="upi-scan")
+    path('upi-scan/', views.Scan_Pay.as_view(), name="upi-scan"),
+    path('test-db/', views.test_db),
 ]
