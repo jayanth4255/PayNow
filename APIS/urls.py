@@ -18,4 +18,5 @@ urlpatterns = [
     path('balance/',views.balance_enquary.as_view(),name='balance'),
     path('upi-scan/', views.Scan_Pay.as_view(), name="upi-scan"),
     path('test-db/', views.test_db),
+    path('load-data/', views.load_data),
 ]

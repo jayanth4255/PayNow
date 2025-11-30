@@ -410,6 +410,8 @@ class set_upi(APIView):
         })
 from django.http import HttpResponse
 from django.db import connection
+import json
+import os
 
 def test_db(request):
     try:
@@ -420,6 +422,57 @@ def test_db(request):
         return HttpResponse("✅ Database is connected!")
     except Exception as e:
         return HttpResponse(f"❌ Database connection error: {e}")
+
+
+def load_data(request):
+    """Load BankUser data from JSON file - for free tier Render deployments"""
+    from django.conf import settings
+    
+    json_file = os.path.join(settings.BASE_DIR, 'bankuser_data.json')
+    
+    if not os.path.exists(json_file):
+        return HttpResponse(f"❌ Error: {json_file} not found!")
+    
+    try:
+        with open(json_file, 'r') as f:
+            data = json.load(f)
+        
+        loaded = 0
+        skipped = 0
+        output = [f"📁 Loading {len(data)} BankUser records...<br><br>"]
+        
+        for item in data:
+            fields = item['fields']
+            phone = fields.get('phone')
+            
+            # Check if user already exists
+            if BankUser.objects.filter(phone=phone).exists():
+                output.append(f"⏭️  Skipped {phone} (already exists)<br>")
+                skipped += 1
+                continue
+            
+            # Create the BankUser
+            BankUser.objects.create(
+                registered_name=fields.get('registered_name'),
+                phone=fields.get('phone'),
+                password=fields.get('password'),
+                bank_name=fields.get('bank_name'),
+                bank_account_num=fields.get('bank_account_num'),
+                ifsc_code=fields.get('ifsc_code'),
+                balance=fields.get('balance', 0),
+                aadhaar=fields.get('aadhaar'),
+                upi_id=fields.get('upi_id'),
+            )
+            loaded += 1
+            output.append(f"✅ Loaded: {fields.get('registered_name')} ({phone})<br>")
+        
+        output.append(f"<br><strong>🎉 Done! Loaded {loaded} users, skipped {skipped}</strong><br>")
+        output.append(f"📊 Total BankUsers in database: {BankUser.objects.count()}")
+        
+        return HttpResponse(''.join(output))
+    
+    except Exception as e:
+        return HttpResponse(f"❌ Error loading data: {str(e)}")
 
 
 class ChangeUpiPin(APIView):
