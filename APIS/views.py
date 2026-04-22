@@ -179,12 +179,16 @@ class LoginView(APIView):
     def post(self, request):
         phone = request.POST.get('phone')
         password = request.POST.get('password')
-        request.session['login_phone'] = phone
 
         serializer = serializers.LoginSerializer(data={'phone': phone, 'password': password})
+
         if serializer.is_valid():
             try:
                 user = BankUser.objects.get(phone=phone)
+
+                # ✅ SET SESSION ONLY AFTER SUCCESS
+                request.session['login_phone'] = phone
+
                 profile, _ = userprofile.objects.get_or_create(phone=phone)
 
                 if not profile.first_login_reward_claimed:
@@ -207,9 +211,16 @@ class LoginView(APIView):
                     request.session['reward_message'] = "🎉 You earned ₹50 reward for your first login!"
 
                 return redirect('index')
+
             except BankUser.DoesNotExist:
                 return render(request, 'login.html', {'error': 'User does not exist'})
+
+        # ❌ Optional but safer: clear session on failure
+        request.session.pop('login_phone', None)
+
         return render(request, 'login.html', {'error': 'Invalid phone or password'})
+
+
 
 
 # --------------------------
