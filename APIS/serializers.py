@@ -69,7 +69,7 @@ class LoginSerializer(serializers.Serializer):
         password = data.get('password')
         try:
             profile = userprofile.objects.get(phone=phone)
-            if profile.pin != password:
+            if profile.phone != phone and profile.pin != password:
                 raise serializers.ValidationError("Password does Not Match")
         except userprofile.DoesNotExist:
             raise serializers.ValidationError("Invalid phone number")
